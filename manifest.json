@@ -1,0 +1,9 @@
+{
+  "repos": [
+    {
+      "id": "bitcoinswitch",
+      "organisation": "dni",
+      "repository": "bitcoinswitch"
+    }
+  ]
+}
