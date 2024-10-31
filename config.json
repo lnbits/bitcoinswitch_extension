@@ -27,21 +27,10 @@
   ],
   "images": [
     {
-      "uri": "https://raw.githubusercontent.com/lnbits/bitcoinswitch/main/static/image/oS5VEEf.png"
-    },
-    {
-      "uri": "https://raw.githubusercontent.com/lnbits/bitcoinswitch/main/static/image/U8dgtSl.png"
-    },
-    {
-      "uri": "https://raw.githubusercontent.com/lnbits/bitcoinswitch/main/static/image/7Nz9PyU.png"
-    },
-    {
-      "uri": "https://raw.githubusercontent.com/lnbits/bitcoinswitch/main/static/image/uPxF8SO.png",
-      "link": "https://www.youtube.com/watch?v=98VYC99s770",
-      "tooltip": "demo video"
+      "uri": "https://raw.githubusercontent.com/lnbits/bitcoinswitch-extension/main/static/image/oS5VEEf.png"
     }
   ],
-  "description_md": "https://raw.githubusercontent.com/lnbits/bitcoinswitch/main/description.md",
-  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/bitcoinswitch/main/toc.md",
+  "description_md": "https://raw.githubusercontent.com/lnbits/bitcoinswitch-extension/main/description.md",
+  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/bitcoinswitch-extension/main/toc.md",
   "license": "MIT"
 }
