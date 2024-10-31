@@ -2,7 +2,7 @@
   "repos": [
     {
       "id": "bitcoinswitch",
-      "organisation": "dni",
+      "organisation": "lnbits",
       "repository": "bitcoinswitch"
     }
   ]
