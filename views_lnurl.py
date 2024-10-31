@@ -89,7 +89,7 @@ async def lnurl_params(
 
 
 @bitcoinswitch_lnurl_router.get(
-    "/api/v1/lnurl/cb/{payment_id}",
+    "/cb/{payment_id}",
     status_code=HTTPStatus.OK,
     name="bitcoinswitch.lnurl_callback",
 )
