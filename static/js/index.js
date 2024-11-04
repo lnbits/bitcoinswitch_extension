@@ -220,6 +220,8 @@ window.app = Vue.createApp({
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
         id: bitcoinswitchId
       })
+      this.wslocation =
+        'wss://' + window.location.host + '/api/v1/ws/' + bitcoinswitchId
       this.settingsDialog.data = _.clone(bitcoinswitch)
       this.settingsDialog.show = true
     },
@@ -261,7 +263,7 @@ window.app = Vue.createApp({
     this.location = [window.location.protocol, '//', window.location.host].join(
       ''
     )
-    this.wslocation = ['ws://', window.location.host].join('')
+    this.wslocation = ['wss://', window.location.host].join('')
     LNbits.api
       .request('GET', '/api/v1/currencies')
       .then(response => {
