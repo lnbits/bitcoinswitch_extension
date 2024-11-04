@@ -16,24 +16,24 @@ bitcoinswitch_lnurl_router = APIRouter(prefix="/api/v1/lnurl")
 
 
 @bitcoinswitch_lnurl_router.get(
-    "{switch_id}",
+    "{bitcoinswitch_id}",
     status_code=HTTPStatus.OK,
     name="bitcoinswitch.lnurl_params",
 )
 async def lnurl_params(
     request: Request,
-    switch_id: str,
+    bitcoinswitch_id: str,
     pin: str,
     amount: str,
     duration: str,
     variable: bool = Query(None),
     comment: bool = Query(None),
 ):
-    switch = await get_bitcoinswitch(switch_id)
+    switch = await get_bitcoinswitch(bitcoinswitch_id)
     if not switch:
         return {
             "status": "ERROR",
-            "reason": f"bitcoinswitch {switch_id} not found on this server",
+            "reason": f"bitcoinswitch {bitcoinswitch_id} not found on this server",
         }
 
     price_msat = int(
@@ -47,7 +47,7 @@ async def lnurl_params(
 
     # Check they're not trying to trick the switch!
     check = False
-    for _switch in switch.switches.switches:
+    for _switch in switch.switches:
         if (
             _switch.pin == int(pin)
             and _switch.duration == int(duration)
@@ -124,7 +124,6 @@ async def lnurl_callback(
             "id": payment_id,
         },
     )
-
     bitcoinswitch_payment.payment_hash = payment.payment_hash
     await update_bitcoinswitch_payment(bitcoinswitch_payment)
 

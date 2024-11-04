@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 
 from lnbits.db import Database
@@ -7,7 +8,6 @@ from .models import (
     Bitcoinswitch,
     BitcoinswitchPayment,
     CreateBitcoinswitch,
-    Switches,
 )
 
 db = Database("ext_bitcoinswitch")
@@ -24,13 +24,14 @@ async def create_bitcoinswitch(
         title=data.title,
         wallet=data.wallet,
         currency=data.currency,
-        switches=Switches(switches=data.switches),
+        switches=data.switches,
     )
     await db.insert("bitcoinswitch.switch", device)
     return device
 
 
 async def update_bitcoinswitch(device: Bitcoinswitch) -> Bitcoinswitch:
+    device.updated_at = datetime.now(timezone.utc)
     await db.update("bitcoinswitch.switch", device)
     return device
 
@@ -77,15 +78,16 @@ async def create_bitcoinswitch_payment(
         payment_hash=payment_hash,
         sats=amount_msat,
     )
-    await db.update("bitcoinswitch.payment", payment)
+    await db.insert("bitcoinswitch.payment", payment)
     return payment
 
 
 async def update_bitcoinswitch_payment(
-    bitcoinswitchpayment: BitcoinswitchPayment,
+    bitcoinswitch_payment: BitcoinswitchPayment,
 ) -> BitcoinswitchPayment:
-    await db.update("bitcoinswitch.payment", bitcoinswitchpayment)
-    return bitcoinswitchpayment
+    bitcoinswitch_payment.updated_at = datetime.now(timezone.utc)
+    await db.update("bitcoinswitch.payment", bitcoinswitch_payment)
+    return bitcoinswitch_payment
 
 
 async def delete_bitcoinswitch_payment(bitcoinswitch_payment_id: str) -> None:
@@ -101,6 +103,7 @@ async def get_bitcoinswitch_payment(
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.payment WHERE id = :id",
         {"id": bitcoinswitchpayment_id},
+        BitcoinswitchPayment,
     )
 
 

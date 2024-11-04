@@ -31,7 +31,9 @@ async def api_bitcoinswitch_create(
     bitcoinswitch_id = urlsafe_short_hash()
 
     # compute lnurl for each pin of switch
-    url = request.url_for("bitcoinswitch.lnurl_params", device_id=bitcoinswitch_id)
+    url = request.url_for(
+        "bitcoinswitch.lnurl_params", bitcoinswitch_id=bitcoinswitch_id
+    )
     for switch in data.switches:
         switch.set_lnurl(str(url))
 
@@ -42,15 +44,28 @@ async def api_bitcoinswitch_create(
     "/api/v1/bitcoinswitch/{bitcoinswitch_id}",
     dependencies=[Depends(require_admin_key)],
 )
-async def api_bitcoinswitch_update(data: CreateBitcoinswitch, bitcoinswitch_id: str):
+async def api_bitcoinswitch_update(
+    request: Request, data: CreateBitcoinswitch, bitcoinswitch_id: str
+):
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
         )
+
     for k, v in data.dict().items():
         if v is not None:
             setattr(bitcoinswitch, k, v)
+
+    # compute lnurl for each pin of switch
+    url = request.url_for(
+        "bitcoinswitch.lnurl_params", bitcoinswitch_id=bitcoinswitch_id
+    )
+    for switch in data.switches:
+        switch.set_lnurl(str(url))
+
+    bitcoinswitch.switches = data.switches
+
     return await update_bitcoinswitch(bitcoinswitch)
 
 

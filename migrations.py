@@ -16,7 +16,8 @@ async def m001_initial(db):
             wallet TEXT NOT NULL,
             currency TEXT NOT NULL,
             switches TEXT NOT NULL,
-            created_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now}
+            created_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now},
+            updated_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now}
         );
     """
     )
@@ -29,7 +30,8 @@ async def m001_initial(db):
             payload TEXT NOT NULL,
             pin INT,
             sats {db.big_int},
-            created_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now}
+            created_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now},
+            updated_at TIMESTAMP NOT NULL DEFAULT {db.timestamp_now}
         );
     """
     )
