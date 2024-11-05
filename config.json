@@ -1,6 +1,6 @@
 {
-  "name": "Bitcoin Switch",
-  "short_description": "Hardware focused LNURL helper",
+  "name": "bitcoinSwitch",
+  "short_description": "Turn things on with bitcoin",
   "tile": "/bitcoinswitch/static/image/icon.png",
   "min_lnbits_version": "0.12.0",
   "contributors": [

@@ -1,4 +1,4 @@
-# Bitcoin Switch - <small>[LNbits](https://github.com/lnbits/lnbits) extension</small>
+Bitcoin Switch - <small>[LNbits](https://github.com/lnbits/lnbits) extension</small>
 
 Turn things on with bitcoin!
 
