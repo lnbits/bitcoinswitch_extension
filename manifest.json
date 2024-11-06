@@ -3,7 +3,7 @@
     {
       "id": "bitcoinswitch",
       "organisation": "lnbits",
-      "repository": "bitcoinswitch-extension"
+      "repository": "bitcoinswitch_extension"
     }
   ]
 }
