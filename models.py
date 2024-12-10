@@ -14,6 +14,7 @@ class Switch(BaseModel):
     comment: bool = False
     variable: bool = False
     lnurl: Optional[str] = None
+    npub: Optional[str] = None
 
     def set_lnurl(self, url: str) -> str:
         self.lnurl = str(
