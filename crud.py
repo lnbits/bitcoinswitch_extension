@@ -160,6 +160,7 @@ async def get_public_keys():
     npubs = [record.npub for record in records if record.npub]
     return npubs
 
+
 async def get_switch_from_npub(npub: str) -> Bitcoinswitch:
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.switch WHERE npub = :npub",

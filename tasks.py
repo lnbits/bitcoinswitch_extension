@@ -1,25 +1,20 @@
 import asyncio
 
 from bech32 import bech32_decode, convertbits
-
-from nostr.filter import Filter, Filters
-from nostr.key import PublicKey
-from nostr.message_type import ClientMessageType
-from nostr.relay_manager import RelayManager
-from nostr.subscription import Subscription
-from nostr.event import Event
-
 from lnbits.core.models import Payment
 from lnbits.core.services import websocket_updater
-from lnbits.tasks import register_invoice_listener
 from lnbits.settings import settings
+from lnbits.tasks import register_invoice_listener
+from nostr.filter import Filter, Filters
+from nostr.relay_manager import RelayManager
 
 from .crud import (
     get_bitcoinswitch_payment,
-    update_bitcoinswitch_payment,
     get_public_keys,
-    get_switch_from_npub
+    get_switch_from_npub,
+    update_bitcoinswitch_payment,
 )
+
 
 async def wait_for_paid_invoices():
     invoice_queue = asyncio.Queue()
@@ -60,11 +55,11 @@ async def on_invoice_paid(payment: Payment) -> None:
         payload,
     )
 
+
 async def get_nostr_events():
     pub_keys = await get_public_keys()
     target_keys_hex = [
-        decode_npub_to_hex(pk) if pk.startswith("npub") else pk
-        for pk in pub_keys
+        decode_npub_to_hex(pk) if pk.startswith("npub") else pk for pk in pub_keys
     ]
 
     relay_url = f"wss://localhost:{settings.port}/nostrclient/api/v1/relay"
@@ -101,6 +96,7 @@ async def get_nostr_events():
             await asyncio.sleep(1)
     finally:
         relay_manager.close_connections()
+
 
 def decode_npub_to_hex(npub):
     hrp, data = bech32_decode(npub)

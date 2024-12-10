@@ -72,9 +72,9 @@ window.app = Vue.createApp({
     'formDialog.data.npub': {
       immediate: true,
       handler(newValue) {
-        this.formDialog.data.nostrfy = newValue !== "";
-      },
-    },
+        this.formDialog.data.nostrfy = newValue !== ''
+      }
+    }
   },
   computed: {
     wsMessage() {

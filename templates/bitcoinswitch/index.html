@@ -292,15 +292,15 @@
             </div>
             <div class="col q-ml-md">
               <q-checkbox
-  v-if="formDialog.data.switches.length < 2"
-  v-model="formDialog.data.nostrfy"
-  color="primary"
-  label="Zaps"
-  size="xs"
-  dense
->
-  <q-tooltip>Use zaps for payments</q-tooltip>
-</q-checkbox>
+                v-if="formDialog.data.switches.length < 2"
+                v-model="formDialog.data.nostrfy"
+                color="primary"
+                label="Zaps"
+                size="xs"
+                dense
+              >
+                <q-tooltip>Use zaps for payments</q-tooltip>
+              </q-checkbox>
             </div>
           </div>
           <div class="row">
@@ -311,7 +311,8 @@
                 dense
                 v-model.trim="formDialog.data.npub"
                 type="text"
-                label="Add your npub (limits to only one switch)">
+                label="Add your npub (limits to only one switch)"
+              >
               </q-input>
             </div>
           </div>
