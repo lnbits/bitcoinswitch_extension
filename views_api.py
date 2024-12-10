@@ -27,7 +27,7 @@ bitcoinswitch_api_router = APIRouter()
 async def api_bitcoinswitch_create(
     request: Request, data: CreateBitcoinswitch
 ) -> Bitcoinswitch:
-    if len(data.switches) > 0 and data.npub != "":
+    if len(data.switches) > 1 and data.npub != "":
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Only one switch allowed if using an npub.",
@@ -57,7 +57,7 @@ async def api_bitcoinswitch_update(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
         )
-    if len(data.switches) > 0 and data.npub != "":
+    if len(data.switches) > 1 and data.npub != "":
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Only one switch allowed if using an npub.",

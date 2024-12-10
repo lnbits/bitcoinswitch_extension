@@ -24,6 +24,7 @@ async def create_bitcoinswitch(
         title=data.title,
         wallet=data.wallet,
         currency=data.currency,
+        npub=data.npub if data.npub != "" else None,
         switches=data.switches,
     )
     await db.insert("bitcoinswitch.switch", device)

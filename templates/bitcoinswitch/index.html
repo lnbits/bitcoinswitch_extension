@@ -215,7 +215,7 @@
           :options="currency"
         ></q-select>
         <q-btn
-          :disable="formDialog.data.npub !== ''"
+          :disable="formDialog.data.switches.length > 0 && formDialog.data.nostrfy == true"
           unelevated
           class="q-mb-lg"
           round
@@ -292,21 +292,21 @@
             </div>
             <div class="col q-ml-md">
               <q-checkbox
-                v-if="formDialog.data.switches.length < 1"
-                v-model="_switch.nostrfy"
-                color="primary"
-                label="Comment"
-                size="xs"
-                dense
-              >
-                <q-tooltip>Enable LNURLp comments with payments</q-tooltip>
-              </q-checkbox>
+  v-if="formDialog.data.switches.length < 2"
+  v-model="formDialog.data.nostrfy"
+  color="primary"
+  label="Zaps"
+  size="xs"
+  dense
+>
+  <q-tooltip>Use zaps for payments</q-tooltip>
+</q-checkbox>
             </div>
           </div>
           <div class="row">
             <div class="col">
               <q-input
-                v-if="_switch.nostrfy"
+                v-if="formDialog.data.nostrfy"
                 filled
                 dense
                 v-model.trim="formDialog.data.npub"

@@ -52,12 +52,14 @@ window.app = Vue.createApp({
           switches: [],
           lnurl_toggle: false,
           show_message: false,
+          nostrfy: false,
           show_ack: false,
           show_price: 'None',
           device: 'pos',
           profit: 1,
           amount: 1,
-          title: ''
+          title: '',
+          npub: ''
         }
       },
       qrCodeDialog: {
@@ -65,6 +67,14 @@ window.app = Vue.createApp({
         data: null
       }
     }
+  },
+  watch: {
+    'formDialog.data.npub': {
+      immediate: true,
+      handler(newValue) {
+        this.formDialog.data.nostrfy = newValue !== "";
+      },
+    },
   },
   computed: {
     wsMessage() {
