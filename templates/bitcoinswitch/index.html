@@ -215,6 +215,7 @@
           :options="currency"
         ></q-select>
         <q-btn
+          :disable="formDialog.data.switches.length > 0 && formDialog.data.nostrfy == true"
           unelevated
           class="q-mb-lg"
           round
@@ -264,7 +265,9 @@
                 label="GPIO pin"
               ></q-input>
             </div>
-            <div class="col q-ml-md">
+          </div>
+          <div class="row">
+            <div class="col">
               <q-checkbox
                 v-model="_switch.variable"
                 color="primary"
@@ -275,6 +278,8 @@
                   >Variable time (Amount * Duration)</q-tooltip
                 ></q-checkbox
               >
+            </div>
+            <div class="col q-ml-md">
               <q-checkbox
                 v-model="_switch.comment"
                 color="primary"
@@ -284,6 +289,31 @@
               >
                 <q-tooltip>Enable LNURLp comments with payments</q-tooltip>
               </q-checkbox>
+            </div>
+            <div class="col q-ml-md">
+              <q-checkbox
+                v-if="formDialog.data.switches.length < 2"
+                v-model="formDialog.data.nostrfy"
+                color="primary"
+                label="Zaps"
+                size="xs"
+                dense
+              >
+                <q-tooltip>Use zaps for payments</q-tooltip>
+              </q-checkbox>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <q-input
+                v-if="formDialog.data.nostrfy"
+                filled
+                dense
+                v-model.trim="formDialog.data.npub"
+                type="text"
+                label="Add your npub (limits to only one switch)"
+              >
+              </q-input>
             </div>
           </div>
         </div>

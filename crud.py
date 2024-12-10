@@ -24,6 +24,7 @@ async def create_bitcoinswitch(
         title=data.title,
         wallet=data.wallet,
         currency=data.currency,
+        npub=data.npub if data.npub != "" else None,
         switches=data.switches,
     )
     await db.insert("bitcoinswitch.switch", device)
@@ -151,4 +152,18 @@ async def get_recent_bitcoinswitch_payment(
         """,
         {"payload": payload},
         BitcoinswitchPayment,
+    )
+
+
+async def get_public_keys():
+    records = await db.fetchall("SELECT * FROM bitcoinswitch.switch ORDER BY id")
+    npubs = [record.npub for record in records if record.npub]
+    return npubs
+
+
+async def get_switch_from_npub(npub: str) -> Bitcoinswitch:
+    return await db.fetchone(
+        "SELECT * FROM bitcoinswitch.switch WHERE npub = :npub",
+        {"npub": npub},
+        Bitcoinswitch,
     )
