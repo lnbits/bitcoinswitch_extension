@@ -35,6 +35,7 @@ class CreateBitcoinswitch(BaseModel):
     wallet: str
     currency: str
     switches: list[Switch]
+    npub: Optional[str] = ""
 
 
 class Bitcoinswitch(BaseModel):
@@ -42,6 +43,7 @@ class Bitcoinswitch(BaseModel):
     title: str
     wallet: str
     currency: str
+    npub: Optional[str] = ""
     key: str
     switches: list[Switch]
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
