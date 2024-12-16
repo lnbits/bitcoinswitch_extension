@@ -1,8 +1,9 @@
 {
+  "id": "bitcoinswitch",
   "name": "bitcoinSwitch",
   "short_description": "Turn things on with bitcoin",
   "tile": "/bitcoinswitch/static/image/icon.png",
-  "min_lnbits_version": "0.12.0",
+  "min_lnbits_version": "1.0.0",
   "contributors": [
     {
       "name": "Ben Arc",
