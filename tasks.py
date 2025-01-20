@@ -3,8 +3,10 @@ import asyncio
 from lnbits.core.models import Payment
 from lnbits.core.services import websocket_updater
 from lnbits.tasks import register_invoice_listener
+from loguru import logger
 
 from .crud import (
+    get_bitcoinswitch,
     get_bitcoinswitch_payment,
     update_bitcoinswitch_payment,
 )
@@ -28,6 +30,11 @@ async def on_invoice_paid(payment: Payment) -> None:
     if not bitcoinswitch_payment or bitcoinswitch_payment.payment_hash == "paid":
         return
 
+    bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_payment.bitcoinswitch_id)
+    if not bitcoinswitch:
+        logger.error("no bitcoinswitch found for payment.")
+        return
+
     bitcoinswitch_payment.payment_hash = bitcoinswitch_payment.payload
     bitcoinswitch_payment = await update_bitcoinswitch_payment(bitcoinswitch_payment)
     payload = bitcoinswitch_payment.payload
@@ -43,6 +50,11 @@ async def on_invoice_paid(payment: Payment) -> None:
     comment = payment.extra.get("comment")
     if comment:
         payload = f"{payload}-{comment}"
+
+    if bitcoinswitch.password and bitcoinswitch.password != comment:
+        # Wrong password
+        logger.info(f"Wrong password entered for bitcoin switch: {bitcoinswitch.id}")
+        return
 
     return await websocket_updater(
         bitcoinswitch_payment.bitcoinswitch_id,

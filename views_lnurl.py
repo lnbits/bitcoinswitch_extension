@@ -79,6 +79,7 @@ async def lnurl_params(
         "callback": f"{url}?variable={variable}",
         "minSendable": price_msat,
         "maxSendable": price_msat,
+        "commentAllowed": 255,
         "metadata": switch.lnurlpay_metadata,
     }
     if comment:
