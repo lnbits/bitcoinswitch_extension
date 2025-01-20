@@ -36,9 +36,10 @@ async def m001_initial(db):
     """
     )
 
+
 async def m002_add_password(db):
     await db.execute(
-        f"""
+        """
         ALTER TABLE bitcoinswitch.switch
         ADD COLUMN password TEXT;
         """
