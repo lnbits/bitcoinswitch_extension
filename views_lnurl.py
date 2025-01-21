@@ -95,7 +95,7 @@ async def lnurl_params(
 )
 async def lnurl_callback(
     payment_id: str,
-    variable: str = Query(None),
+    variable: bool = Query(None),
     amount: int = Query(None),
     comment: str = Query(None),
 ):
@@ -109,17 +109,6 @@ async def lnurl_callback(
 
     if not amount:
         return {"status": "ERROR", "reason": "No amount"}
-
-    if variable == "False":
-        _switch = None
-        for __switch in switch.switches:
-            if __switch.pin == bitcoinswitch_payment.pin:
-                _switch = __switch
-                break
-        if not _switch:
-            return {"status": "ERROR", "reason": "Switch not found"}
-        if _switch.amount != amount / 1000:
-            return {"status": "ERROR", "reason": "Amount mismatch"}
 
     payment = await create_invoice(
         wallet_id=switch.wallet,
