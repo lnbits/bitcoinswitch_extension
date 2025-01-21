@@ -83,7 +83,7 @@ async def lnurl_params(
     }
     if comment:
         resp["commentAllowed"] = 1500
-    if variable:
+    if variable is True:
         resp["maxSendable"] = price_msat * 360
     return resp
 
@@ -95,7 +95,7 @@ async def lnurl_params(
 )
 async def lnurl_callback(
     payment_id: str,
-    variable: str = Query(None),
+    variable: bool = Query(None),
     amount: int = Query(None),
     comment: str = Query(None),
 ):

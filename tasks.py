@@ -31,13 +31,13 @@ async def on_invoice_paid(payment: Payment) -> None:
     bitcoinswitch_payment.payment_hash = bitcoinswitch_payment.payload
     bitcoinswitch_payment = await update_bitcoinswitch_payment(bitcoinswitch_payment)
     payload = bitcoinswitch_payment.payload
-    variable = payment.extra.get("variable", False)
-    if variable:
+
+    variable = payment.extra.get("variable")
+    if variable is True:
         payload = str(
             (int(payload) / int(bitcoinswitch_payment.sats))
             * int(payment.extra["amount"])
         )
-
     payload = f"{bitcoinswitch_payment.pin}-{payload}"
 
     comment = payment.extra.get("comment")
