@@ -33,7 +33,7 @@ async def on_invoice_paid(payment: Payment) -> None:
     payload = bitcoinswitch_payment.payload
 
     variable = payment.extra.get("variable")
-    if variable == "True":
+    if variable is True:
         payload = str(
             (int(payload) / int(bitcoinswitch_payment.sats))
             * int(payment.extra["amount"])
