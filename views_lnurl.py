@@ -83,7 +83,7 @@ async def lnurl_params(
     }
     if comment:
         resp["commentAllowed"] = 1500
-    if variable:
+    if variable is True:
         resp["maxSendable"] = price_msat * 360
     return resp
 
@@ -109,6 +109,17 @@ async def lnurl_callback(
 
     if not amount:
         return {"status": "ERROR", "reason": "No amount"}
+
+    if variable == "False":
+        _switch = None
+        for __switch in switch.switches:
+            if __switch.pin == bitcoinswitch_payment.pin:
+                _switch = __switch
+                break
+        if not _switch:
+            return {"status": "ERROR", "reason": "Switch not found"}
+        if _switch.amount != amount / 1000:
+            return {"status": "ERROR", "reason": "Amount mismatch"}
 
     payment = await create_invoice(
         wallet_id=switch.wallet,
