@@ -35,3 +35,14 @@ async def m001_initial(db):
         );
     """
     )
+
+
+async def m002_add_npub(db):
+    """
+    Add npubs
+    """
+    await db.execute(
+        """
+        ALTER TABLE bitcoinswitch.switch ADD npub TEXT NULL;
+    """
+    )
