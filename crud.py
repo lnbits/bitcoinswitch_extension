@@ -25,6 +25,7 @@ async def create_bitcoinswitch(
         wallet=data.wallet,
         currency=data.currency,
         switches=data.switches,
+        password=data.password,
     )
     await db.insert("bitcoinswitch.switch", device)
     return device

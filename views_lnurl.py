@@ -79,6 +79,7 @@ async def lnurl_params(
         "callback": f"{url}?variable={variable}",
         "minSendable": price_msat,
         "maxSendable": price_msat,
+        "commentAllowed": 255,
         "metadata": switch.lnurlpay_metadata,
     }
     if comment:
@@ -127,11 +128,15 @@ async def lnurl_callback(
     bitcoinswitch_payment.payment_hash = payment.payment_hash
     await update_bitcoinswitch_payment(bitcoinswitch_payment)
 
+    message = f"{int(amount / 1000)}sats sent"
+    if switch.password and switch.password != comment:
+        message = f"{message}, but password was incorrect! :("
+
     return {
         "pr": payment.bolt11,
         "successAction": {
             "tag": "message",
-            "message": f"{int(amount / 1000)}sats sent",
+            "message": message,
         },
         "routes": [],
     }
