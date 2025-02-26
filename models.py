@@ -13,6 +13,7 @@ class Switch(BaseModel):
     pin: int = 0
     comment: bool = False
     variable: bool = False
+    label: Optional[str] = None
     lnurl: Optional[str] = None
 
     def set_lnurl(self, url: str) -> str:
