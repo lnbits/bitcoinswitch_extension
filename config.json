@@ -1,6 +1,6 @@
 {
   "id": "bitcoinswitch",
-  "name": "bitcoinSwitch",
+  "name": "Bitcoin Switch",
   "short_description": "Turn things on with bitcoin",
   "tile": "/bitcoinswitch/static/image/icon.png",
   "min_lnbits_version": "1.0.0",
