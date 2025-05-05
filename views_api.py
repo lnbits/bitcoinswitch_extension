@@ -8,6 +8,7 @@ from lnbits.decorators import (
     require_invoice_key,
 )
 from lnbits.helpers import urlsafe_short_hash
+from lnurl.exceptions import InvalidUrl
 
 from .crud import (
     create_bitcoinswitch,
@@ -35,7 +36,13 @@ async def api_bitcoinswitch_create(
         "bitcoinswitch.lnurl_params", bitcoinswitch_id=bitcoinswitch_id
     )
     for switch in data.switches:
-        switch.set_lnurl(str(url))
+        try:
+            switch.set_lnurl(str(url))
+        except InvalidUrl as exc:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail=f"Invalid LNURL. `{url!s}`",
+            ) from exc
 
     return await create_bitcoinswitch(bitcoinswitch_id, data)
 
@@ -62,7 +69,13 @@ async def api_bitcoinswitch_update(
         "bitcoinswitch.lnurl_params", bitcoinswitch_id=bitcoinswitch_id
     )
     for switch in data.switches:
-        switch.set_lnurl(str(url))
+        try:
+            switch.set_lnurl(str(url))
+        except InvalidUrl as exc:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail=f"Invalid LNURL. `{url!s}`",
+            ) from exc
 
     bitcoinswitch.switches = data.switches
 
