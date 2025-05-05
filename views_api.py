@@ -41,7 +41,7 @@ async def api_bitcoinswitch_create(
         except InvalidUrl as exc:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
-                detail=f"Invalid URL for lnurl switch. {url!s}",
+                detail=f"Invalid LNURL. `{url!s}`",
             ) from exc
 
     return await create_bitcoinswitch(bitcoinswitch_id, data)
@@ -74,7 +74,7 @@ async def api_bitcoinswitch_update(
         except InvalidUrl as exc:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
-                detail=f"Invalid URL for lnurl switch. {url!s}",
+                detail=f"Invalid LNURL. `{url!s}`",
             ) from exc
 
     bitcoinswitch.switches = data.switches
