@@ -4,8 +4,6 @@ window.app = Vue.createApp({
   data() {
     return {
       protocol: window.location.protocol,
-      location: window.location.hostname,
-      wslocation: window.location.hostname,
       filter: '',
       currency: 'USD',
       lnurlValue: '',
@@ -41,10 +39,6 @@ window.app = Vue.createApp({
         pagination: {
           rowsPerPage: 10
         }
-      },
-      settingsDialog: {
-        show: false,
-        data: {}
       },
       formDialog: {
         show: false,
@@ -216,14 +210,9 @@ window.app = Vue.createApp({
       this.formDialog.data = _.clone(bitcoinswitch)
       this.formDialog.show = true
     },
-    openBitcoinswitchSettings(bitcoinswitchId) {
-      const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
-        id: bitcoinswitchId
-      })
-      this.wslocation =
-        'wss://' + window.location.host + '/api/v1/ws/' + bitcoinswitchId
-      this.settingsDialog.data = _.clone(bitcoinswitch)
-      this.settingsDialog.show = true
+    copyDeviceString(bitcoinswitchId) {
+      const loc = `wss://${window.location.host}/api/v1/ws/${bitcoinswitchId}`
+      this.copyText(loc, 'Device string copied to clipboard!')
     },
     websocketConnector(websocketUrl) {
       if ('WebSocket' in window) {
@@ -260,10 +249,6 @@ window.app = Vue.createApp({
   },
   created() {
     this.getBitcoinswitches()
-    this.location = [window.location.protocol, '//', window.location.host].join(
-      ''
-    )
-    this.wslocation = ['wss://', window.location.host].join('')
     LNbits.api
       .request('GET', '/api/v1/currencies')
       .then(response => {
