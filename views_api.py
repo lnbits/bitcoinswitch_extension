@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from lnbits.core.crud import get_user
 from lnbits.core.models import WalletTypeInfo
 from lnbits.decorators import (
@@ -8,7 +8,6 @@ from lnbits.decorators import (
     require_invoice_key,
 )
 from lnbits.helpers import urlsafe_short_hash
-from lnurl.exceptions import InvalidUrl
 
 from .crud import (
     create_bitcoinswitch,
@@ -25,25 +24,8 @@ bitcoinswitch_api_router = APIRouter()
 @bitcoinswitch_api_router.post(
     "/api/v1/bitcoinswitch", dependencies=[Depends(require_admin_key)]
 )
-async def api_bitcoinswitch_create(
-    request: Request, data: CreateBitcoinswitch
-) -> Bitcoinswitch:
-
+async def api_bitcoinswitch_create(data: CreateBitcoinswitch) -> Bitcoinswitch:
     bitcoinswitch_id = urlsafe_short_hash()
-
-    # compute lnurl for each pin of switch
-    url = request.url_for(
-        "bitcoinswitch.lnurl_params", bitcoinswitch_id=bitcoinswitch_id
-    )
-    for switch in data.switches:
-        try:
-            switch.set_lnurl(str(url))
-        except InvalidUrl as exc:
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail=f"Invalid LNURL. `{url!s}`",
-            ) from exc
-
     return await create_bitcoinswitch(bitcoinswitch_id, data)
 
 
@@ -51,9 +33,7 @@ async def api_bitcoinswitch_create(
     "/api/v1/bitcoinswitch/{bitcoinswitch_id}",
     dependencies=[Depends(require_admin_key)],
 )
-async def api_bitcoinswitch_update(
-    request: Request, data: CreateBitcoinswitch, bitcoinswitch_id: str
-):
+async def api_bitcoinswitch_update(data: CreateBitcoinswitch, bitcoinswitch_id: str):
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
@@ -64,21 +44,7 @@ async def api_bitcoinswitch_update(
         if v is not None:
             setattr(bitcoinswitch, k, v)
 
-    # compute lnurl for each pin of switch
-    url = request.url_for(
-        "bitcoinswitch.lnurl_params", bitcoinswitch_id=bitcoinswitch_id
-    )
-    for switch in data.switches:
-        try:
-            switch.set_lnurl(str(url))
-        except InvalidUrl as exc:
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail=f"Invalid LNURL. `{url!s}`",
-            ) from exc
-
     bitcoinswitch.switches = data.switches
-
     return await update_bitcoinswitch(bitcoinswitch)
 
 

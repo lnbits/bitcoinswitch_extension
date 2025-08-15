@@ -3,10 +3,12 @@ window.app = Vue.createApp({
   mixins: [windowMixin],
   data() {
     return {
-      protocol: window.location.protocol,
+      tab: 'bech32',
+      url: window.location.origin + '/bitcoinswitch/api/v1/lnurl',
+      activePin: 0,
+      lnurl: '',
       filter: '',
       currency: 'USD',
-      lnurlValue: '',
       websocketMessage: '',
       bitcoinswitches: [],
       bitcoinswitchTable: {
@@ -65,15 +67,34 @@ window.app = Vue.createApp({
       return this.websocketMessage
     }
   },
+  watch: {
+    activePin() {
+      this.generateSwitchUrl()
+    },
+    tab() {
+      this.generateSwitchUrl()
+    }
+  },
   methods: {
+    generateSwitchUrl() {
+      const _switch = this.qrCodeDialog.data.switches.find(
+        s => s.pin === this.activePin
+      )
+      const url = `${this.url}/${this.qrCodeDialog.data.id}?amount=${_switch.amount}&pin=${_switch.pin}&duration=${_switch.duration}&variable=${_switch.variable}&comment=${_switch.comment}`
+      if (this.tab == 'bech32') {
+        const bytes = new TextEncoder().encode(url)
+        const bech32 = NostrTools.nip19.encodeBytes('lnurl', bytes)
+        this.lnurl = `lightning:${bech32.toUpperCase()}`
+      } else if (this.tab == 'lud17') {
+        this.lnurl = url.replace('https://', 'lnurlp://')
+      }
+    },
     openQrCodeDialog(bitcoinswitchId) {
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
         id: bitcoinswitchId
       })
       this.qrCodeDialog.data = _.clone(bitcoinswitch)
-      this.qrCodeDialog.data.url =
-        window.location.protocol + '//' + window.location.host
-      this.lnurlValue = this.qrCodeDialog.data.switches[0].lnurl
+      this.activePin = bitcoinswitch.switches[0].pin
       this.websocketConnector(
         'wss://' + window.location.host + '/api/v1/ws/' + bitcoinswitchId
       )

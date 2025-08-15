@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timezone
 from typing import Optional
 
-from lnurl import encode as lnurl_encode
 from lnurl.types import LnurlPayMetadata
 from pydantic import BaseModel, Field
 
@@ -14,21 +13,6 @@ class Switch(BaseModel):
     comment: bool = False
     variable: bool = False
     label: Optional[str] = None
-    lnurl: Optional[str] = None
-
-    def set_lnurl(self, url: str) -> str:
-        self.lnurl = str(
-            lnurl_encode(
-                url
-                + f"?pin={self.pin}"
-                + f"&amount={self.amount}"
-                + f"&duration={self.duration}"
-                + f"&variable={self.variable}"
-                + f"&comment={self.comment}"
-                + "&disabletime=0"
-            )
-        )
-        return self.lnurl
 
 
 class CreateBitcoinswitch(BaseModel):
