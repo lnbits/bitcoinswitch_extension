@@ -16,7 +16,7 @@ bitcoinswitch_lnurl_router = APIRouter(prefix="/api/v1/lnurl")
 
 
 @bitcoinswitch_lnurl_router.get(
-    "{bitcoinswitch_id}",
+    "/{bitcoinswitch_id}",
     status_code=HTTPStatus.OK,
     name="bitcoinswitch.lnurl_params",
 )
