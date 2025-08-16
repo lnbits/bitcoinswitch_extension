@@ -310,21 +310,27 @@
 
   <q-dialog v-model="qrCodeDialog.show" position="top">
     <q-card v-if="qrCodeDialog.data" class="q-pa-lg lnbits__dialog-card">
-      <lnbits-qrcode
-        :value="'lightning:' + lnurlValue"
-        class="rounded-borders"
-      ></lnbits-qrcode>
+      <q-card-section>
+        <q-tabs
+          v-model="tab"
+          dense
+          class="text-grey"
+          active-color="primary"
+          indicator-color="primary"
+          align="justify"
+          narrow-indicator
+          inline-label
+        >
+          <q-tab name="bech32" icon="qr_code" label="bech32"></q-tab>
+          <q-tab name="lud17" icon="link" label="url (lud17)"></q-tab>
+        </q-tabs>
+      </q-card-section>
+      <lnbits-qrcode :value="lnurl" class="rounded-borders"></lnbits-qrcode>
       <br />
       <q-btn
         outline
         color="grey"
-        @click="copyText(lnurlValue, 'LNURL copied to clipboard!')"
-        >Trigger Device</q-btn
-      >
-      <q-btn
-        outline
-        color="grey"
-        @click="copyText(lnurlValue, 'LNURL copied to clipboard!')"
+        @click="copyText(lnurl, 'LNURL copied to clipboard!')"
         >Copy LNURL</q-btn
       >
       <q-chip
@@ -339,12 +345,13 @@
       <q-chip v-else clickable color="green" text-color="white" icon="check">
         <span v-text="wsMessage"></span>
       </q-chip>
-      <div class="row q-mt-lg q-gutter-sm">
+      <div class="row q-mb-lg q-mt-lg q-gutter-sm">
         <q-btn
           v-for="_switch in qrCodeDialog.data.switches"
           outline
           color="primary"
-          @click="lnurlValue = _switch.lnurl"
+          @click="activePin = _switch.pin"
+          :disabled="_switch.pin == activePin"
           :label="'Switch pin:' + _switch.pin + ' (' + _switch.duration + ' ms)'"
         ></q-btn>
       </div>
