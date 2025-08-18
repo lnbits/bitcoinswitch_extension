@@ -14,9 +14,9 @@ db = Database("ext_bitcoinswitch")
 
 
 async def create_bitcoinswitch(
-    bitcoinswitch_id: str,
     data: CreateBitcoinswitch,
 ) -> Bitcoinswitch:
+    bitcoinswitch_id = urlsafe_short_hash()
     bitcoinswitch_key = urlsafe_short_hash()
     device = Bitcoinswitch(
         id=bitcoinswitch_id,
