@@ -20,9 +20,7 @@ from .models import Bitcoinswitch, CreateBitcoinswitch
 bitcoinswitch_api_router = APIRouter(prefix="/api/v1/bitcoinswitch")
 
 
-@bitcoinswitch_api_router.post(
-    "", dependencies=[Depends(require_admin_key)]
-)
+@bitcoinswitch_api_router.post("", dependencies=[Depends(require_admin_key)])
 async def api_bitcoinswitch_create(data: CreateBitcoinswitch) -> Bitcoinswitch:
     return await create_bitcoinswitch(data)
 
