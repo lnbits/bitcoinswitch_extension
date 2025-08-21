@@ -81,11 +81,14 @@ async def lnurl_params(
 async def lnurl_callback(
     payment_id: str,
     amount: int | None = Query(None),
-    comment: str | None = Query(None, max_length=255),
+    comment: str | None = Query(None),
 ) -> LnurlPayActionResponse | LnurlErrorResponse:
     bitcoinswitch_payment = await get_bitcoinswitch_payment(payment_id)
     if not bitcoinswitch_payment:
         return LnurlErrorResponse(reason="Switch payment not found.")
+    if comment and len(comment) > 255:
+        return LnurlErrorResponse(reason="Comment too long, max 255 characters.")
+
     switch = await get_bitcoinswitch(bitcoinswitch_payment.bitcoinswitch_id)
     if not switch:
         await delete_bitcoinswitch_payment(payment_id)
