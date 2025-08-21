@@ -3,6 +3,17 @@ from http import HTTPStatus
 from fastapi import APIRouter, Query, Request
 from lnbits.core.services import create_invoice
 from lnbits.utils.exchange_rates import fiat_amount_as_satoshis
+from lnurl import (
+    CallbackUrl,
+    LightningInvoice,
+    LnurlErrorResponse,
+    LnurlPayActionResponse,
+    LnurlPayResponse,
+    Max144Str,
+    MessageAction,
+    MilliSatoshi,
+)
+from pydantic import parse_obj_as
 
 from .crud import (
     create_bitcoinswitch_payment,
@@ -17,7 +28,6 @@ bitcoinswitch_lnurl_router = APIRouter(prefix="/api/v1/lnurl")
 
 @bitcoinswitch_lnurl_router.get(
     "/{bitcoinswitch_id}",
-    status_code=HTTPStatus.OK,
     name="bitcoinswitch.lnurl_params",
 )
 async def lnurl_params(
@@ -28,13 +38,12 @@ async def lnurl_params(
     duration: str,
     variable: bool = Query(None),
     comment: bool = Query(None),
-):
+) -> LnurlPayResponse | LnurlErrorResponse:
     switch = await get_bitcoinswitch(bitcoinswitch_id)
     if not switch:
-        return {
-            "status": "ERROR",
-            "reason": f"bitcoinswitch {bitcoinswitch_id} not found on this server",
-        }
+        return LnurlErrorResponse(
+            reason=f"bitcoinswitch {bitcoinswitch_id} not found on this server"
+        )
 
     price_msat = int(
         (
@@ -57,7 +66,7 @@ async def lnurl_params(
             check = True
             continue
     if not check:
-        return {"status": "ERROR", "reason": "Extra params wrong"}
+        return LnurlErrorResponse(reason="Extra params wrong")
 
     bitcoinswitch_payment = await create_bitcoinswitch_payment(
         bitcoinswitch_id=switch.id,
@@ -67,26 +76,22 @@ async def lnurl_params(
         payment_hash="not yet set",
     )
     if not bitcoinswitch_payment:
-        return {"status": "ERROR", "reason": "Could not create payment."}
+        return LnurlErrorResponse(reason="Could not create payment.")
 
     url = str(
         request.url_for(
             "bitcoinswitch.lnurl_callback", payment_id=bitcoinswitch_payment.id
         )
     )
-    resp = {
-        "tag": "payRequest",
-        "callback": f"{url}?variable={variable}",
-        "minSendable": price_msat,
-        "maxSendable": price_msat,
-        "commentAllowed": 255,
-        "metadata": switch.lnurlpay_metadata,
-    }
-    if comment:
-        resp["commentAllowed"] = 1500
-    if variable is True:
-        resp["maxSendable"] = price_msat * 360
-    return resp
+    max_sendable = price_msat * 360 if variable else price_msat
+    res = LnurlPayResponse(
+        callback=parse_obj_as(CallbackUrl, url),
+        minSendable=MilliSatoshi(price_msat),
+        maxSendable=MilliSatoshi(max_sendable),
+        commentAllowed=255,
+        metadata=switch.lnurlpay_metadata,
+    )
+    return res
 
 
 @bitcoinswitch_lnurl_router.get(
@@ -99,17 +104,17 @@ async def lnurl_callback(
     variable: bool = Query(None),
     amount: int = Query(None),
     comment: str = Query(None),
-):
+) -> LnurlPayActionResponse | LnurlErrorResponse:
     bitcoinswitch_payment = await get_bitcoinswitch_payment(payment_id)
     if not bitcoinswitch_payment:
-        return {"status": "ERROR", "reason": "bitcoinswitchpayment not found."}
+        return LnurlErrorResponse(reason="bitcoinswitchpayment not found.")
     switch = await get_bitcoinswitch(bitcoinswitch_payment.bitcoinswitch_id)
     if not switch:
         await delete_bitcoinswitch_payment(payment_id)
-        return {"status": "ERROR", "reason": "bitcoinswitch not found."}
+        return LnurlErrorResponse(reason="bitcoinswitch not found.")
 
     if not amount:
-        return {"status": "ERROR", "reason": "No amount"}
+        return LnurlErrorResponse(reason="No amount specified")
 
     payment = await create_invoice(
         wallet_id=switch.wallet,
@@ -132,11 +137,7 @@ async def lnurl_callback(
     if switch.password and switch.password != comment:
         message = f"{message}, but password was incorrect! :("
 
-    return {
-        "pr": payment.bolt11,
-        "successAction": {
-            "tag": "message",
-            "message": message,
-        },
-        "routes": [],
-    }
+    return LnurlPayActionResponse(
+        pr=parse_obj_as(LightningInvoice, payment.bolt11),
+        successAction=MessageAction(message=parse_obj_as(Max144Str, message)),
+    )
