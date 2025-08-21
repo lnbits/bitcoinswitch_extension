@@ -74,7 +74,7 @@ async def lnurl_params(
         metadata=LnurlPayMetadata(json.dumps([["text/plain", switch.title]])),
     )
     if _switch.comment is True:
-        res.comment_allowed = 255
+        res.commentAllowed = 255
 
     return res
 
