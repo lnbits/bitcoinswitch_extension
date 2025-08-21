@@ -1,6 +1,3 @@
-import json
-from http import HTTPStatus
-
 from fastapi import APIRouter, Query, Request
 from lnbits.core.services import create_invoice
 from lnbits.utils.exchange_rates import fiat_amount_as_satoshis
@@ -74,20 +71,17 @@ async def lnurl_params(
         metadata=LnurlPayMetadata(json.dumps([["text/plain", switch.title]])),
     )
     if _switch.comment is True:
-        res.commentAllowed = 255
+        # TODO remove ignore after updating to lnurl 0.8.0
+        res.commentAllowed = 255  # type: ignore
 
     return res
 
 
-@bitcoinswitch_lnurl_router.get(
-    "/cb/{payment_id}",
-    status_code=HTTPStatus.OK,
-    name="bitcoinswitch.lnurl_callback",
-)
+@bitcoinswitch_lnurl_router.get("/cb/{payment_id}", name="bitcoinswitch.lnurl_callback")
 async def lnurl_callback(
     payment_id: str,
     amount: int | None = Query(None),
-    comment: str | None = Query(None),
+    comment: str | None = Query(None, max_length=255),
 ) -> LnurlPayActionResponse | LnurlErrorResponse:
     bitcoinswitch_payment = await get_bitcoinswitch_payment(payment_id)
     if not bitcoinswitch_payment:
