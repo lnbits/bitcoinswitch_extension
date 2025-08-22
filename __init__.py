@@ -41,9 +41,9 @@ def bitcoinswitch_start():
 
 
 __all__ = [
-    "db",
     "bitcoinswitch_ext",
-    "bitcoinswitch_static_files",
     "bitcoinswitch_start",
+    "bitcoinswitch_static_files",
     "bitcoinswitch_stop",
+    "db",
 ]
