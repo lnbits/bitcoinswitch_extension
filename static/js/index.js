@@ -80,7 +80,7 @@ window.app = Vue.createApp({
       const _switch = this.qrCodeDialog.data.switches.find(
         s => s.pin === this.activePin
       )
-      this.activeUrl = `${this.url}/${this.qrCodeDialog.data.id}?amount=${_switch.amount}&pin=${_switch.pin}&duration=${_switch.duration}&variable=${_switch.variable}&comment=${_switch.comment}`
+      this.activeUrl = `${this.url}/${this.qrCodeDialog.data.id}?pin=${_switch.pin}`
     },
     updateLnurl(value) {
       this.lnurl = value
@@ -91,9 +91,7 @@ window.app = Vue.createApp({
       })
       this.qrCodeDialog.data = _.clone(bitcoinswitch)
       this.activePin = bitcoinswitch.switches[0].pin
-      this.websocketConnector(
-        'wss://' + window.location.host + '/api/v1/ws/' + bitcoinswitchId
-      )
+      this.websocketConnector(websocketUrl + '/' + bitcoinswitchId)
       this.qrCodeDialog.show = true
     },
     addSwitch() {
