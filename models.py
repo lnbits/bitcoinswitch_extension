@@ -34,10 +34,12 @@ class Bitcoinswitch(BaseModel):
 
 class BitcoinswitchPayment(BaseModel):
     id: str
-    payment_hash: str
     bitcoinswitch_id: str
-    payload: str
+    payment_hash: str
     pin: int
     sats: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # TODO: deprecated do not use this field anymore
+    # should be deleted from the database in the future
+    payload: str = ""
