@@ -193,7 +193,7 @@
           v-model.trim="formDialog.data.currency"
           type="text"
           label="Fiat currency for device"
-          :options="currency"
+          :options="currencies"
         ></q-select>
         <q-input
           filled
@@ -332,6 +332,13 @@
         color="grey"
         @click="copyText(lnurl, 'LNURL copied to clipboard!')"
         >Copy LNURL</q-btn
+      >
+      <q-btn outline color="grey" @click="triggerPin" class="q-ml-sm">
+        <q-tooltip
+          >Trigger the GPIO pin with duration via the websocket as if a payment
+          hit</q-tooltip
+        >
+        Trigger Pin</q-btn
       >
       <q-chip
         v-if="websocketMessage == 'WebSocket NOT supported by your Browser!' || websocketMessage == 'Connection closed'"
