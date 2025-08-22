@@ -310,7 +310,10 @@
 
   <q-dialog v-model="qrCodeDialog.show" position="top">
     <q-card v-if="qrCodeDialog.data" class="q-pa-lg lnbits__dialog-card">
-      <lnbits-qrcode-lnurl :url="activeUrl" @update:lnurl="updateLnurl"></lnbits-qrcode-lnurl>
+      <lnbits-qrcode-lnurl
+        :url="activeUrl"
+        @update:lnurl="updateLnurl"
+      ></lnbits-qrcode-lnurl>
       <br />
       <q-btn
         outline

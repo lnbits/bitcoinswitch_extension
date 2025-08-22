@@ -83,7 +83,7 @@ window.app = Vue.createApp({
       this.activeUrl = `${this.url}/${this.qrCodeDialog.data.id}?amount=${_switch.amount}&pin=${_switch.pin}&duration=${_switch.duration}&variable=${_switch.variable}&comment=${_switch.comment}`
     },
     updateLnurl(value) {
-        this.lnurl = value
+      this.lnurl = value
     },
     openQrCodeDialog(bitcoinswitchId) {
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
