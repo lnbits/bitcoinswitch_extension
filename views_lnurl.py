@@ -73,8 +73,7 @@ async def lnurl_params(
         metadata=LnurlPayMetadata(json.dumps([["text/plain", switch.title]])),
     )
     if _switch.comment is True:
-        # TODO remove ignore after updating to lnurl 0.8.0
-        res.commentAllowed = 255  # type: ignore
+        res.commentAllowed = 255
 
     return res
 
