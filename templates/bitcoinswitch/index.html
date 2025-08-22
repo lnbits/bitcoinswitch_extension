@@ -340,18 +340,6 @@
         >
         Trigger Pin</q-btn
       >
-      <q-chip
-        v-if="websocketMessage == 'WebSocket NOT supported by your Browser!' || websocketMessage == 'Connection closed'"
-        clickable
-        color="red"
-        text-color="white"
-        icon="error"
-      >
-        <span v-text="wsMessage"></span>
-      </q-chip>
-      <q-chip v-else clickable color="green" text-color="white" icon="check">
-        <span v-text="wsMessage"></span>
-      </q-chip>
       <div class="row q-mb-lg q-mt-lg q-gutter-sm">
         <q-btn
           v-for="_switch in qrCodeDialog.data.switches"

@@ -11,7 +11,6 @@ window.app = Vue.createApp({
       filter: '',
       currency: 'sat',
       currencies: [],
-      websocketMessage: '',
       bitcoinswitches: [],
       bitcoinswitchTable: {
         columns: [
@@ -65,11 +64,6 @@ window.app = Vue.createApp({
       }
     }
   },
-  computed: {
-    wsMessage() {
-      return this.websocketMessage
-    }
-  },
   watch: {
     activePin() {
       this.generateSwitchUrl()
@@ -98,7 +92,6 @@ window.app = Vue.createApp({
       })
       this.qrCodeDialog.data = _.clone(bitcoinswitch)
       this.activePin = bitcoinswitch.switches[0].pin
-      this.websocketConnector(websocketUrl + '/' + bitcoinswitchId)
       this.qrCodeDialog.show = true
     },
     addSwitch() {
@@ -238,23 +231,6 @@ window.app = Vue.createApp({
     copyDeviceString(bitcoinswitchId) {
       const loc = `wss://${window.location.host}/api/v1/ws/${bitcoinswitchId}`
       this.copyText(loc, 'Device string copied to clipboard!')
-    },
-    websocketConnector(websocketUrl) {
-      if ('WebSocket' in window) {
-        const ws = new WebSocket(websocketUrl)
-        this.updateWsMessage('Websocket connected')
-        ws.onmessage = evt => {
-          this.updateWsMessage('Message received: ' + evt.data)
-        }
-        ws.onclose = () => {
-          this.updateWsMessage('Connection closed')
-        }
-      } else {
-        this.updateWsMessage('WebSocket NOT supported by your Browser!')
-      }
-    },
-    updateWsMessage(message) {
-      this.websocketMessage = message
     },
     exportCSV() {
       LNbits.utils.exportCSV(
