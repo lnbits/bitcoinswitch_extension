@@ -1,0 +1,78 @@
+{% extends "public.html" %} {% block page %}
+<div class="row q-col-gutter-md justify-center">
+  <div class="col-12 col-sm-6 col-md-5 col-lg-4">
+    <q-card class="q-pa-lg">
+      <q-card-section class="q-pa-none text-center">
+        <lnbits-qrcode-lnurl
+          :url="activeUrl"
+          @update:lnurl="v => lnurl = v"
+        ></lnbits-qrcode-lnurl>
+        <q-btn
+          color="primary"
+          class="q-mt-md"
+          icon="content_copy"
+          :label="$t('copy') + ' LNURL'"
+          @click="copyText(lnurl)"
+        ></q-btn>
+      </q-card-section>
+    </q-card>
+  </div>
+  <div class="col-12 col-sm-6 col-md-5 col-lg-4 q-gutter-y-md">
+    <q-card>
+      <q-card-section>
+        <h6 class="text-subtitle1 q-mb-sm q-mt-none">Bitcoinswitch</h6>
+        <p class="text-caption q-mb-md">Turn on and off things with bitcoin!</p>
+        <a
+          class="text-secondary"
+          href="https://github.com/lnbits/bitcoinSwitch"
+        >
+          https://github.com/lnbits/bitcoinSwitch</a
+        >
+      </q-card-section>
+    </q-card>
+    <q-card>
+      <q-card-section>
+        <h6 class="text-subtitle1 q-mb-sm q-mt-none" v-text="bs.name"></h6>
+        <q-select
+          v-model="activePin"
+          :options="bs.switches"
+          option-value="pin"
+          option-label="pin"
+          label="Select a pin"
+          outlined
+          dense
+          class="q-mb-md"
+        ></q-select>
+        <q-btn
+          color="primary"
+          class="full-width"
+          :label="$t('copy') + ' LNURL'"
+          @click="copyText(lnurl)"
+        ></q-btn>
+      </q-card-section>
+    </q-card>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  const bitcoinSwitch = JSON.parse({{ switch | tojson }})
+  window.app = Vue.createApp({
+    el: '#vue',
+    mixins: [windowMixin],
+    data() {
+      return {
+        bs: bitcoinSwitch,
+        url: `${window.location.origin}/bitcoinswitch/api/v1/lnurl/{{ switch_id }}`,
+        lnurl: '',
+        activeUrl: '',
+        activePin: bitcoinSwitch.switches[0].pin,
+      }
+    },
+    watch: {
+      activePin(value) {
+        this.activeUrl = `${this.url}?pin=${value.pin}`
+      }
+    }
+  })
+</script>
+{% endblock %}
