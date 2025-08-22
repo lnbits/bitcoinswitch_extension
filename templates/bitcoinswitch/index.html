@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% from "macros.jinja" import window_vars with context
 %} {% block page %}
 <div class="row q-col-gutter-md">
-  <div class="col-12 col-md-7 q-gutter-y-md">
+  <div class="col-12 col-md-8 q-gutter-y-md">
     <q-card>
       <q-card-section>
         <q-btn unelevated color="primary" @click="formDialog.show = true"
@@ -126,18 +126,16 @@
     </q-card>
   </div>
 
-  <div class="col-12 col-md-5 q-gutter-y-md">
+  <div class="col-12 col-md-4 q-gutter-y-md">
     <q-card>
       <q-card-section>
-        <h6 class="text-subtitle1 q-my-none">
-          {{SITE_TITLE}} Bitcoinswitch Extension
-        </h6>
+        <h6 class="text-subtitle1 q-my-none">LNbits Bitcoinswitch Extension</h6>
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
         <p>
           Turn on and off things with bitcoin!<br />
-          Bitcoin Switch Hardware:
+          Hardware:
           <a
             class="text-secondary"
             href="https://github.com/lnbits/bitcoinSwitch"
@@ -165,8 +163,13 @@
     </q-card>
   </div>
 
-  <q-dialog v-model="formDialog.show" deviceition="top" @hide="closeFormDialog">
-    <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+  <q-dialog
+    v-model="formDialog.show"
+    deviceition="top"
+    size="md"
+    @hide="closeFormDialog"
+  >
+    <q-card class="q-pa-lg q-pt-xl">
       <q-form @submit="sendFormData" class="q-gutter-md">
         <h5 v-html="formDialog.data.device" v-if="formDialog.data.id"></h5>
         <q-input
@@ -220,6 +223,16 @@
           v-model="formDialog.data.switches"
           color="primary"
         ></q-btn>
+        <q-toggle
+          v-model="formDialog.data.disabled"
+          color="primary"
+          :label="formDialog.data.disabled ? 'Switch is disabled' : 'Switch is enabled'"
+          dense
+          class="q-mt-none q-ml-lg"
+          ><q-tooltip
+            >Disable the device, it will return lnurl errors.</q-tooltip
+          ></q-toggle
+        >
         <div v-for="_switch in formDialog.data.switches">
           <div class="row">
             <div class="col">

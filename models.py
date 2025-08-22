@@ -18,6 +18,7 @@ class CreateBitcoinswitch(BaseModel):
     currency: str
     switches: list[Switch]
     password: str | None = None
+    disabled: bool = False
 
 
 class Bitcoinswitch(BaseModel):
@@ -25,11 +26,15 @@ class Bitcoinswitch(BaseModel):
     title: str
     wallet: str
     currency: str
-    key: str
     switches: list[Switch]
     password: str | None = None
+    disabled: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # obsolete field, do not use anymore
+    # should be deleted from the database in the future
+    key: str = ""
 
 
 class BitcoinswitchPayment(BaseModel):

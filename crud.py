@@ -16,10 +16,8 @@ async def create_bitcoinswitch(
     data: CreateBitcoinswitch,
 ) -> Bitcoinswitch:
     bitcoinswitch_id = urlsafe_short_hash()
-    bitcoinswitch_key = urlsafe_short_hash()
     device = Bitcoinswitch(
         id=bitcoinswitch_id,
-        key=bitcoinswitch_key,
         title=data.title,
         wallet=data.wallet,
         currency=data.currency,
