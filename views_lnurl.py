@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from fastapi import APIRouter, Query, Request
@@ -8,6 +9,7 @@ from lnurl import (
     LightningInvoice,
     LnurlErrorResponse,
     LnurlPayActionResponse,
+    LnurlPayMetadata,
     LnurlPayResponse,
     Max144Str,
     MessageAction,
@@ -89,7 +91,7 @@ async def lnurl_params(
         minSendable=MilliSatoshi(price_msat),
         maxSendable=MilliSatoshi(max_sendable),
         commentAllowed=255,
-        metadata=switch.lnurlpay_metadata,
+        metadata=LnurlPayMetadata(json.dumps([["text/plain", switch.title]])),
     )
     return res
 
@@ -116,11 +118,13 @@ async def lnurl_callback(
     if not amount:
         return LnurlErrorResponse(reason="No amount specified")
 
+    metadata = LnurlPayMetadata(json.dumps([["text/plain", switch.title]]))
+
     payment = await create_invoice(
         wallet_id=switch.wallet,
         amount=int(amount / 1000),
         memo=f"{switch.title} ({bitcoinswitch_payment.payload} ms)",
-        unhashed_description=switch.lnurlpay_metadata.encode(),
+        unhashed_description=metadata.encode(),
         extra={
             "tag": "Switch",
             "pin": str(bitcoinswitch_payment.pin),

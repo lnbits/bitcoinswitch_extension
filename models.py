@@ -1,8 +1,6 @@
-import json
 from datetime import datetime, timezone
 from typing import Optional
 
-from lnurl.types import LnurlPayMetadata
 from pydantic import BaseModel, Field
 
 
@@ -33,10 +31,6 @@ class Bitcoinswitch(BaseModel):
     password: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-    @property
-    def lnurlpay_metadata(self) -> LnurlPayMetadata:
-        return LnurlPayMetadata(json.dumps([["text/plain", self.title]]))
 
 
 class BitcoinswitchPayment(BaseModel):
