@@ -76,6 +76,10 @@ window.app = Vue.createApp({
     }
   },
   methods: {
+    switchLabel(_switch) {
+      const label = _switch.label !== null ? _switch.label : 'Switch '
+      return label + ' pin: ' + _switch.pin + ' (' + _switch.duration + ' ms)'
+    },
     generateSwitchUrl() {
       const _switch = this.qrCodeDialog.data.switches.find(
         s => s.pin === this.activePin
