@@ -4,11 +4,13 @@ window.app = Vue.createApp({
   data() {
     return {
       url: window.location.origin + '/bitcoinswitch/api/v1/lnurl',
+      apiUrl: window.location.origin + '/bitcoinswitch/api/v1',
       activeUrl: 0,
       activePin: 0,
       lnurl: '',
       filter: '',
-      currency: 'USD',
+      currency: 'sat',
+      currencies: [],
       websocketMessage: '',
       bitcoinswitches: [],
       bitcoinswitchTable: {
@@ -154,17 +156,12 @@ window.app = Vue.createApp({
         }
       }
       LNbits.api
-        .request(
-          'POST',
-          '/bitcoinswitch/api/v1/bitcoinswitch',
-          wallet,
-          updatedData
-        )
+        .request('POST', this.apiUrl, wallet, updatedData)
         .then(response => {
           this.bitcoinswitches.push(response.data)
           this.closeFormDialog()
         })
-        .catch(function (error) {
+        .catch(error => {
           LNbits.utils.notifyApiError(error)
         })
     },
@@ -176,12 +173,7 @@ window.app = Vue.createApp({
         }
       }
       LNbits.api
-        .request(
-          'PUT',
-          '/bitcoinswitch/api/v1/bitcoinswitch/' + updatedData.id,
-          wallet,
-          updatedData
-        )
+        .request('PUT', this.apiUrl + '/' + updatedData.id, wallet, updatedData)
         .then(() => {
           this.$q.notify({
             type: 'success',
@@ -189,25 +181,17 @@ window.app = Vue.createApp({
           })
           this.closeFormDialog()
         })
-        .catch(function (error) {
-          LNbits.utils.notifyApiError(error)
-        })
+        .catch(LNbits.utils.notifyApiError)
     },
     getBitcoinswitches() {
       LNbits.api
-        .request(
-          'GET',
-          '/bitcoinswitch/api/v1/bitcoinswitch',
-          this.g.user.wallets[0].adminkey
-        )
+        .request('GET', this.apiUrl, this.g.user.wallets[0].adminkey)
         .then(response => {
           if (response.data.length > 0) {
             this.bitcoinswitches = response.data
           }
         })
-        .catch(function (error) {
-          LNbits.utils.notifyApiError(error)
-        })
+        .catch(LNbits.utils.notifyApiError)
     },
     deleteBitcoinswitch(bitcoinswitchId) {
       LNbits.utils
@@ -216,21 +200,33 @@ window.app = Vue.createApp({
           LNbits.api
             .request(
               'DELETE',
-              '/bitcoinswitch/api/v1/bitcoinswitch/' + bitcoinswitchId,
+              this.apiUrl + '/' + bitcoinswitchId,
               this.g.user.wallets[0].adminkey
             )
             .then(() => {
               this.bitcoinswitches = _.reject(
                 this.bitcoinswitches,
-                function (obj) {
-                  return obj.id === bitcoinswitchId
-                }
+                obj => obj.id === bitcoinswitchId
               )
             })
-            .catch(function (error) {
-              LNbits.utils.notifyApiError(error)
-            })
+            .catch(LNbits.utils.notifyApiError)
         })
+    },
+    triggerPin() {
+      const _id = this.qrCodeDialog.data.id
+      LNbits.api
+        .request(
+          'PUT',
+          `${this.apiUrl}/trigger/${_id}/${this.activePin}`,
+          this.g.user.wallets[0].adminkey
+        )
+        .then(() => {
+          this.$q.notify({
+            type: 'positive',
+            message: 'Switch triggered successfully!'
+          })
+        })
+        .catch(LNbits.utils.notifyApiError)
     },
     openUpdateBitcoinswitch(bitcoinswitchId) {
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
@@ -272,7 +268,7 @@ window.app = Vue.createApp({
     LNbits.api
       .request('GET', '/api/v1/currencies')
       .then(response => {
-        this.currency = ['sat', 'USD', ...response.data]
+        this.currencies = ['sat', 'USD', ...response.data]
       })
       .catch(LNbits.utils.notifyApiError)
   }
