@@ -159,8 +159,7 @@
           </small>
         </p>
         <p class="text-warning">
-          WARNING: updating the switches amount, duration or pin will change the
-          QR code.
+          WARNING: updating the switch pin will change the QR code.
         </p>
       </q-card-section>
     </q-card>
@@ -340,7 +339,7 @@
           color="primary"
           @click="activePin = _switch.pin"
           :disabled="_switch.pin == activePin"
-          :label="'Switch pin:' + _switch.pin + ' (' + _switch.duration + ' ms)'"
+          :label="switchLabel(_switch)"
         ></q-btn>
       </div>
       <q-btn v-close-popup flat color="grey" class="q-ml-auto">Close</q-btn>
