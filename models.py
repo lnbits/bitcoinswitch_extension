@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -10,7 +9,7 @@ class Switch(BaseModel):
     pin: int = 0
     comment: bool = False
     variable: bool = False
-    label: Optional[str] = None
+    label: str | None = None
 
 
 class CreateBitcoinswitch(BaseModel):
@@ -18,7 +17,7 @@ class CreateBitcoinswitch(BaseModel):
     wallet: str
     currency: str
     switches: list[Switch]
-    password: Optional[str] = None
+    password: str | None = None
 
 
 class Bitcoinswitch(BaseModel):
@@ -28,7 +27,7 @@ class Bitcoinswitch(BaseModel):
     currency: str
     key: str
     switches: list[Switch]
-    password: Optional[str] = None
+    password: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

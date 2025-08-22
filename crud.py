@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from lnbits.db import Database
 from lnbits.helpers import urlsafe_short_hash
@@ -37,7 +36,7 @@ async def update_bitcoinswitch(device: Bitcoinswitch) -> Bitcoinswitch:
     return device
 
 
-async def get_bitcoinswitch(bitcoinswitch_id: str) -> Optional[Bitcoinswitch]:
+async def get_bitcoinswitch(bitcoinswitch_id: str) -> Bitcoinswitch | None:
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.switch WHERE id = :id",
         {"id": bitcoinswitch_id},
@@ -100,7 +99,7 @@ async def delete_bitcoinswitch_payment(bitcoinswitch_payment_id: str) -> None:
 
 async def get_bitcoinswitch_payment(
     bitcoinswitchpayment_id: str,
-) -> Optional[BitcoinswitchPayment]:
+) -> BitcoinswitchPayment | None:
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.payment WHERE id = :id",
         {"id": bitcoinswitchpayment_id},
@@ -125,7 +124,7 @@ async def get_bitcoinswitch_payments(
 
 async def get_bitcoinswitch_payment_by_payhash(
     payhash: str,
-) -> Optional[BitcoinswitchPayment]:
+) -> BitcoinswitchPayment | None:
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.payment WHERE payhash = :payhash",
         {"payhash": payhash},
@@ -134,7 +133,7 @@ async def get_bitcoinswitch_payment_by_payhash(
 
 async def get_bitcoinswitch_payment_by_payload(
     payload: str,
-) -> Optional[BitcoinswitchPayment]:
+) -> BitcoinswitchPayment | None:
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.payment WHERE payload = :payload",
         {"payload": payload},
@@ -144,7 +143,7 @@ async def get_bitcoinswitch_payment_by_payload(
 
 async def get_recent_bitcoinswitch_payment(
     payload: str,
-) -> Optional[BitcoinswitchPayment]:
+) -> BitcoinswitchPayment | None:
     return await db.fetchone(
         """
         SELECT * FROM bitcoinswitch.bitcoinswitchpayment
