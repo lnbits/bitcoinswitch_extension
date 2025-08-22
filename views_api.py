@@ -29,7 +29,9 @@ async def api_bitcoinswitch_create(data: CreateBitcoinswitch) -> Bitcoinswitch:
     "/{bitcoinswitch_id}",
     dependencies=[Depends(require_admin_key)],
 )
-async def api_bitcoinswitch_update(data: CreateBitcoinswitch, bitcoinswitch_id: str):
+async def api_bitcoinswitch_update(
+    data: CreateBitcoinswitch, bitcoinswitch_id: str
+) -> Bitcoinswitch:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
@@ -60,11 +62,11 @@ async def api_bitcoinswitchs_retrieve(
     "/{bitcoinswitch_id}",
     dependencies=[Depends(require_invoice_key)],
 )
-async def api_bitcoinswitch_retrieve(bitcoinswitch_id: str):
+async def api_bitcoinswitch_retrieve(bitcoinswitch_id: str) -> Bitcoinswitch:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
+            status_code=HTTPStatus.NOT_FOUND, detail="Bitcoinswitch does not exist"
         )
     return bitcoinswitch
 
@@ -73,10 +75,10 @@ async def api_bitcoinswitch_retrieve(bitcoinswitch_id: str):
     "/{bitcoinswitch_id}",
     dependencies=[Depends(require_admin_key)],
 )
-async def api_bitcoinswitch_delete(bitcoinswitch_id: str):
+async def api_bitcoinswitch_delete(bitcoinswitch_id: str) -> None:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Lnurldevice does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="Bitcoinswitch does not exist."
         )
     await delete_bitcoinswitch(bitcoinswitch_id)
