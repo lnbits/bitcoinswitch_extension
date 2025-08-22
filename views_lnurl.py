@@ -31,6 +31,10 @@ async def lnurl_params(
         return LnurlErrorResponse(
             reason=f"bitcoinswitch {bitcoinswitch_id} not found on this server"
         )
+    if switch.disabled:
+        return LnurlErrorResponse(
+            reason=f"bitcoinswitch {bitcoinswitch_id} is disabled"
+        )
 
     _switch = next((_s for _s in switch.switches if _s.pin == int(pin)), None)
     if not _switch:
@@ -76,6 +80,8 @@ async def lnurl_callback(
     switch = await get_bitcoinswitch(switch_id)
     if not switch:
         return LnurlErrorResponse(reason="Switch not found.")
+    if switch.disabled:
+        return LnurlErrorResponse(reason=f"bitcoinswitch {switch_id} is disabled")
     _switch = next((_s for _s in switch.switches if _s.pin == int(pin)), None)
     if not _switch:
         return LnurlErrorResponse(reason=f"Switch with pin {pin} not found.")

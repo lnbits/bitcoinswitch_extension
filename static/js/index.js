@@ -32,10 +32,10 @@ window.app = Vue.createApp({
             field: 'currency'
           },
           {
-            name: 'key',
+            name: 'disabled',
             align: 'left',
-            label: 'key',
-            field: 'key'
+            label: 'disabled',
+            field: 'disabled'
           }
         ],
         pagination: {
@@ -53,7 +53,8 @@ window.app = Vue.createApp({
           device: 'pos',
           profit: 1,
           amount: 1,
-          title: ''
+          title: '',
+          disabled: false
         }
       },
       qrCodeDialog: {
@@ -110,14 +111,25 @@ window.app = Vue.createApp({
     removeSwitch() {
       this.formDialog.data.switches.pop()
     },
+    clearFormDialog() {
+      this.formDialog.data = {
+        lnurl_toggle: false,
+        show_message: false,
+        show_ack: false,
+        show_price: 'None',
+        title: ''
+      }
+    },
     cancelFormDialog() {
       this.formDialog.show = false
       this.clearFormDialog()
     },
     closeFormDialog() {
       this.clearFormDialog()
+      this.formDialog.show = false
       this.formDialog.data = {
-        is_unique: false
+        is_unique: false,
+        disabled: false
       }
     },
     sendFormData() {
@@ -150,8 +162,7 @@ window.app = Vue.createApp({
         )
         .then(response => {
           this.bitcoinswitches.push(response.data)
-          this.formDialog.show = false
-          this.clearFormDialog()
+          this.closeFormDialog()
         })
         .catch(function (error) {
           LNbits.utils.notifyApiError(error)
@@ -171,13 +182,12 @@ window.app = Vue.createApp({
           wallet,
           updatedData
         )
-        .then(response => {
-          this.bitcoinswitches = _.reject(this.bitcoinswitches, function (obj) {
-            return obj.id === updatedData.id
+        .then(() => {
+          this.$q.notify({
+            type: 'success',
+            message: 'Bitcoinswitch updated successfully!'
           })
-          this.bitcoinswitches.push(response.data)
-          this.formDialog.show = false
-          this.clearFormDialog()
+          this.closeFormDialog()
         })
         .catch(function (error) {
           LNbits.utils.notifyApiError(error)
@@ -249,15 +259,6 @@ window.app = Vue.createApp({
     },
     updateWsMessage(message) {
       this.websocketMessage = message
-    },
-    clearFormDialog() {
-      this.formDialog.data = {
-        lnurl_toggle: false,
-        show_message: false,
-        show_ack: false,
-        show_price: 'None',
-        title: ''
-      }
     },
     exportCSV() {
       LNbits.utils.exportCSV(

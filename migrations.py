@@ -44,3 +44,12 @@ async def m002_add_password(db):
         ADD COLUMN password TEXT;
         """
     )
+
+
+async def m003_disabled(db):
+    await db.execute(
+        """
+        ALTER TABLE bitcoinswitch.switch
+        ADD COLUMN disabled BOOLEAN NOT NULL DEFAULT FALSE;
+        """
+    )
