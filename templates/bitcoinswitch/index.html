@@ -233,6 +233,17 @@
             >Disable the device, it will return lnurl errors.</q-tooltip
           ></q-toggle
         >
+        <q-toggle
+          v-model="formDialog.data.disposable"
+          color="primary"
+          :label="formDialog.data.disposable ? 'Paylink is disposable (LUD11)' : 'Paylink is stored (LUD11)'"
+          dense
+          class="q-mt-none q-ml-lg"
+          ><q-tooltip
+            >If disabled signals LUD11 disposable and will be stored if the
+            wallet supports it.</q-tooltip
+          ></q-toggle
+        >
         <div v-for="_switch in formDialog.data.switches">
           <div class="row">
             <div class="col">
