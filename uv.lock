@@ -379,13 +379,13 @@ requires-dist = [{ name = "lnbits", specifier = ">1" }]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "black", specifier = ">=24.3.0" },
-    { name = "mypy", specifier = ">=1.17.1" },
-    { name = "pre-commit", specifier = ">=3.2.2" },
-    { name = "pytest", specifier = ">=7.3.2" },
-    { name = "pytest-asyncio", specifier = ">=0.21.0" },
-    { name = "pytest-md", specifier = ">=0.2.0" },
-    { name = "ruff", specifier = ">=0.3.2" },
+    { name = "black" },
+    { name = "mypy" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-md" },
+    { name = "ruff" },
 ]
 
 [[package]]
