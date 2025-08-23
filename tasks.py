@@ -48,7 +48,9 @@ async def on_invoice_paid(payment: Payment) -> None:
     duration = _switch.duration
 
     if _switch.variable is True:
-        duration = round(_switch.duration / switch_payment.sats * _switch.amount)
+        duration = round(
+            (switch_payment.sats / 1000) / _switch.amount * _switch.duration
+        )
 
     payload = f"{_switch.pin}-{duration}"
 
