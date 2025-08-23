@@ -37,6 +37,12 @@ window.app = Vue.createApp({
             align: 'left',
             label: 'disabled',
             field: 'disabled'
+          },
+          {
+            name: 'disposable',
+            align: 'left',
+            label: 'disposable',
+            field: 'disposable'
           }
         ],
         pagination: {
@@ -55,7 +61,8 @@ window.app = Vue.createApp({
           profit: 1,
           amount: 1,
           title: '',
-          disabled: false
+          disabled: false,
+          disposable: true
         }
       },
       qrCodeDialog: {
@@ -124,7 +131,8 @@ window.app = Vue.createApp({
       this.formDialog.show = false
       this.formDialog.data = {
         is_unique: false,
-        disabled: false
+        disabled: false,
+        disposable: true
       }
     },
     sendFormData() {
