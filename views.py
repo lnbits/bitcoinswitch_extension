@@ -29,7 +29,11 @@ async def public(
 ):
     switch = await get_bitcoinswitch(switch_id)
     if not switch:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Switch not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Switch not found."
+        )
+    if switch.disabled:
+        raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Switch disabled.")
 
     return bitcoinswitch_renderer().TemplateResponse(
         "bitcoinswitch/public.html",

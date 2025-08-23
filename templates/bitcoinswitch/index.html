@@ -42,11 +42,7 @@
         >
           <template v-slot:header="props">
             <q-tr :props="props">
-              <q-th style="width: 5%"></q-th>
-              <q-th style="width: 5%"></q-th>
-              <q-th style="width: 5%"></q-th>
-              <q-th style="width: 5%"></q-th>
-
+              <q-th auto-width></q-th>
               <q-th
                 v-for="col in props.cols"
                 :key="col.name"
@@ -60,7 +56,7 @@
 
           <template v-slot:body="props">
             <q-tr :props="props">
-              <q-td>
+              <q-td style="display: flex">
                 <q-btn
                   flat
                   dense
@@ -68,11 +64,48 @@
                   @click="openUpdateBitcoinswitch(props.row.id)"
                   icon="edit"
                   color="blue"
+                  class="q-mr-sm"
                 >
                   <q-tooltip>Edit Bitcoinswitch</q-tooltip>
                 </q-btn>
-              </q-td>
-              <q-td>
+                <q-btn
+                  flat
+                  dense
+                  size="xs"
+                  @click="copyDeviceString(props.row.id)"
+                  icon="perm_data_setting"
+                  color="primary"
+                  class="q-mr-xs"
+                >
+                  <q-tooltip>Device string</q-tooltip>
+                </q-btn>
+                <q-btn
+                  :disable="protocol == 'http:'"
+                  flat
+                  unelevated
+                  dense
+                  size="xs"
+                  icon="visibility"
+                  class="q-mr-xs"
+                  @click="openQrCodeDialog(props.row.id)"
+                  ><q-tooltip v-if="protocol == 'http:'">
+                    LNURLs only work over HTTPS </q-tooltip
+                  ><q-tooltip v-else> view LNURLS </q-tooltip></q-btn
+                >
+                <q-btn
+                  flat
+                  dense
+                  size="xs"
+                  @click="openLink(props.row.id)"
+                  icon="link"
+                  color="orange"
+                  class="q-mr-xs"
+                >
+                  <q-tooltip
+                    >Open public LNURL Paylink Bitcoinswitch page.</q-tooltip
+                  >
+                </q-btn>
+                <span style="flex-grow: 1"></span>
                 <q-btn
                   flat
                   dense
@@ -83,32 +116,6 @@
                 >
                   <q-tooltip>Delete Bitcoinswitch</q-tooltip>
                 </q-btn>
-              </q-td>
-              <q-td>
-                <q-btn
-                  flat
-                  dense
-                  size="xs"
-                  @click="copyDeviceString(props.row.id)"
-                  icon="perm_data_setting"
-                  color="primary"
-                >
-                  <q-tooltip>Device string</q-tooltip>
-                </q-btn>
-              </q-td>
-              <q-td>
-                <q-btn
-                  :disable="protocol == 'http:'"
-                  flat
-                  unelevated
-                  dense
-                  size="xs"
-                  icon="visibility"
-                  @click="openQrCodeDialog(props.row.id)"
-                  ><q-tooltip v-if="protocol == 'http:'">
-                    LNURLs only work over HTTPS </q-tooltip
-                  ><q-tooltip v-else> view LNURLS </q-tooltip></q-btn
-                >
               </q-td>
               <q-td
                 v-for="col in props.cols"
@@ -335,7 +342,7 @@
     <q-card v-if="qrCodeDialog.data" class="q-pa-lg lnbits__dialog-card">
       <lnbits-qrcode-lnurl
         :url="activeUrl"
-        @update:lnurl="updateLnurl"
+        @update:lnurl="v => lnurl = v"
       ></lnbits-qrcode-lnurl>
       <br />
       <q-btn
