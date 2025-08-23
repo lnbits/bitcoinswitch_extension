@@ -119,4 +119,5 @@ async def lnurl_callback(
     return LnurlPayActionResponse(
         pr=parse_obj_as(LightningInvoice, payment.bolt11),
         successAction=MessageAction(message=parse_obj_as(Max144Str, message)),
+        disposable=switch.disposable,
     )

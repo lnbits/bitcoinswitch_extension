@@ -19,6 +19,7 @@ class CreateBitcoinswitch(BaseModel):
     switches: list[Switch]
     password: str | None = None
     disabled: bool = False
+    disposable: bool = True
 
 
 class Bitcoinswitch(BaseModel):
@@ -29,6 +30,7 @@ class Bitcoinswitch(BaseModel):
     switches: list[Switch]
     password: str | None = None
     disabled: bool = False
+    disposable: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
