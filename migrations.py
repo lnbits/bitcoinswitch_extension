@@ -53,3 +53,12 @@ async def m003_disabled(db):
         ADD COLUMN disabled BOOLEAN NOT NULL DEFAULT FALSE;
         """
     )
+
+
+async def m004_disposable(db):
+    await db.execute(
+        """
+        ALTER TABLE bitcoinswitch.switch
+        ADD COLUMN disposable BOOLEAN NOT NULL DEFAULT TRUE;
+        """
+    )
