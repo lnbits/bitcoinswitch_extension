@@ -5,6 +5,7 @@ window.app = Vue.createApp({
     return {
       url: window.location.origin + '/bitcoinswitch/api/v1/lnurl',
       apiUrl: window.location.origin + '/bitcoinswitch/api/v1',
+      publicUrl: window.location.origin + '/bitcoinswitch/public',
       activeUrl: 0,
       activePin: 0,
       lnurl: '',
@@ -80,6 +81,9 @@ window.app = Vue.createApp({
     }
   },
   methods: {
+    openLink(id) {
+      window.open(`${this.publicUrl}/${id}`, '_blank')
+    },
     switchLabel(_switch) {
       const label = _switch.label !== null ? _switch.label : 'Switch '
       return label + ' pin: ' + _switch.pin + ' (' + _switch.duration + ' ms)'
@@ -89,9 +93,6 @@ window.app = Vue.createApp({
         s => s.pin === this.activePin
       )
       this.activeUrl = `${this.url}/${this.qrCodeDialog.data.id}?pin=${_switch.pin}`
-    },
-    updateLnurl(value) {
-      this.lnurl = value
     },
     openQrCodeDialog(bitcoinswitchId) {
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
@@ -137,27 +138,20 @@ window.app = Vue.createApp({
     },
     sendFormData() {
       if (this.formDialog.data.id) {
-        this.updateBitcoinswitch(
-          this.g.user.wallets[0].adminkey,
-          this.formDialog.data
-        )
+        this.updateBitcoinswitch()
       } else {
-        this.createBitcoinswitch(
-          this.g.user.wallets[0].adminkey,
-          this.formDialog.data
-        )
+        this.createBitcoinswitch()
       }
     },
 
-    createBitcoinswitch(wallet, data) {
-      const updatedData = {}
-      for (const property in data) {
-        if (data[property]) {
-          updatedData[property] = data[property]
-        }
-      }
+    createBitcoinswitch() {
       LNbits.api
-        .request('POST', this.apiUrl, wallet, updatedData)
+        .request(
+          'POST',
+          this.apiUrl,
+          this.g.user.wallets[0].adminkey,
+          this.formDialog.data
+        )
         .then(response => {
           this.bitcoinswitches.push(response.data)
           this.closeFormDialog()
@@ -166,16 +160,19 @@ window.app = Vue.createApp({
           LNbits.utils.notifyApiError(error)
         })
     },
-    updateBitcoinswitch(wallet, data) {
-      const updatedData = {}
-      for (const property in data) {
-        if (data[property]) {
-          updatedData[property] = data[property]
-        }
-      }
+    updateBitcoinswitch() {
       LNbits.api
-        .request('PUT', this.apiUrl + '/' + updatedData.id, wallet, updatedData)
-        .then(() => {
+        .request(
+          'PUT',
+          this.apiUrl + '/' + this.formDialog.data.id,
+          this.g.user.wallets[0].adminkey,
+          this.formDialog.data
+        )
+        .then(response => {
+          const index = this.bitcoinswitches.findIndex(
+            obj => obj.id === response.data.id
+          )
+          this.bitcoinswitches[index] = response.data
           this.$q.notify({
             type: 'success',
             message: 'Bitcoinswitch updated successfully!'
