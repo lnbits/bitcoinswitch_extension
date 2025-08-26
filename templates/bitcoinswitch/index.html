@@ -56,7 +56,7 @@
 
           <template v-slot:body="props">
             <q-tr :props="props">
-              <q-td style="display: flex">
+              <q-td style="display: flex; grid-gap: 12px">
                 <q-btn
                   flat
                   dense
@@ -64,7 +64,6 @@
                   @click="openUpdateBitcoinswitch(props.row.id)"
                   icon="edit"
                   color="blue"
-                  class="q-mr-sm"
                 >
                   <q-tooltip>Edit Bitcoinswitch</q-tooltip>
                 </q-btn>
@@ -75,7 +74,6 @@
                   @click="copyDeviceString(props.row.id)"
                   icon="perm_data_setting"
                   color="primary"
-                  class="q-mr-xs"
                 >
                   <q-tooltip>Device string</q-tooltip>
                 </q-btn>
@@ -86,7 +84,6 @@
                   dense
                   size="xs"
                   icon="visibility"
-                  class="q-mr-xs"
                   @click="openQrCodeDialog(props.row.id)"
                   ><q-tooltip v-if="protocol == 'http:'">
                     LNURLs only work over HTTPS </q-tooltip
@@ -99,7 +96,6 @@
                   @click="openLink(props.row.id)"
                   icon="link"
                   color="orange"
-                  class="q-mr-xs"
                 >
                   <q-tooltip
                     >Open public LNURL Paylink Bitcoinswitch page.</q-tooltip
@@ -344,21 +340,7 @@
         :url="activeUrl"
         @update:lnurl="v => lnurl = v"
       ></lnbits-qrcode-lnurl>
-      <br />
-      <q-btn
-        outline
-        color="grey"
-        @click="copyText(lnurl, 'LNURL copied to clipboard!')"
-        >Copy LNURL</q-btn
-      >
-      <q-btn outline color="grey" @click="triggerPin" class="q-ml-sm">
-        <q-tooltip
-          >Trigger the GPIO pin with duration via the websocket as if a payment
-          hit</q-tooltip
-        >
-        Trigger Pin</q-btn
-      >
-      <div class="row q-mb-lg q-mt-lg q-gutter-sm">
+      <div class="row q-mb-sm q-gutter-sm">
         <q-btn
           v-for="_switch in qrCodeDialog.data.switches"
           outline
@@ -368,7 +350,16 @@
           :label="switchLabel(_switch)"
         ></q-btn>
       </div>
-      <q-btn v-close-popup flat color="grey" class="q-ml-auto">Close</q-btn>
+      <div class="row">
+        <q-btn v-close-popup flat color="grey">Close</q-btn>
+        <q-btn outline color="grey" @click="triggerPin" class="q-ml-auto">
+          <q-tooltip
+            >Trigger the GPIO pin with duration via the websocket as if a
+            payment hit</q-tooltip
+          >
+          Trigger Pin</q-btn
+        >
+      </div>
     </q-card>
   </q-dialog>
 </div>
