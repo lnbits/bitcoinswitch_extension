@@ -1,7 +1,7 @@
 import json
 
 from fastapi import APIRouter, Query, Request
-from lnbits.core.services import create_invoice
+from lnbits.core.services import create_invoice, websocket_manager
 from lnbits.utils.exchange_rates import fiat_amount_as_satoshis
 from lnurl import (
     CallbackUrl,
@@ -86,6 +86,9 @@ async def lnurl_callback(
     _switch = next((_s for _s in switch.switches if _s.pin == int(pin)), None)
     if not _switch:
         return LnurlErrorResponse(reason=f"Switch with pin {pin} not found.")
+
+    if not websocket_manager.has_connection(switch_id):
+        return LnurlErrorResponse(reason="No active bitcoinswitch connections.")
 
     memo = f"{switch.title} (pin: {pin})"
     if comment:

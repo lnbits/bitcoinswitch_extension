@@ -1,7 +1,7 @@
 import asyncio
 
 from lnbits.core.models import Payment
-from lnbits.core.services import websocket_updater
+from lnbits.core.services import websocket_manager
 from lnbits.tasks import register_invoice_listener
 from loguru import logger
 
@@ -63,4 +63,4 @@ async def on_invoice_paid(payment: Payment) -> None:
         logger.info(f"Wrong password entered for bitcoin switch: {bitcoinswitch.id}")
         return
 
-    return await websocket_updater(bitcoinswitch.id, payload)
+    return await websocket_manager.send(bitcoinswitch.id, payload)
