@@ -87,8 +87,7 @@ async def lnurl_callback(
     if not _switch:
         return LnurlErrorResponse(reason=f"Switch with pin {pin} not found.")
 
-    # TODO remove ignore after #3330 is merged and released
-    if not websocket_manager.has_connection(switch_id):  # type: ignore
+    if not websocket_manager.has_connection(switch_id):
         return LnurlErrorResponse(reason="No active bitcoinswitch connections.")
 
     memo = f"{switch.title} (pin: {pin})"

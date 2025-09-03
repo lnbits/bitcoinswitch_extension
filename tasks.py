@@ -63,5 +63,4 @@ async def on_invoice_paid(payment: Payment) -> None:
         logger.info(f"Wrong password entered for bitcoin switch: {bitcoinswitch.id}")
         return
 
-    # TODO remove ignore after #3330 is merged and released
-    return await websocket_manager.send(bitcoinswitch.id, payload)  # type: ignore
+    return await websocket_manager.send(bitcoinswitch.id, payload)
