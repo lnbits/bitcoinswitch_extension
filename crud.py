@@ -63,10 +63,10 @@ async def delete_bitcoinswitch(bitcoinswitch_id: str) -> None:
 
 
 async def create_switch_payment(
-    payment_hash: str,
     switch_id: str,
     pin: int,
-    amount_msat: int = 0,
+    amount_msat: int,
+    payment_hash: str = "not yet set",
 ) -> BitcoinswitchPayment:
     payment_id = urlsafe_short_hash()
     payment = BitcoinswitchPayment(
@@ -74,7 +74,7 @@ async def create_switch_payment(
         payment_hash=payment_hash,
         bitcoinswitch_id=switch_id,
         pin=pin,
-        sats=amount_msat,
+        sats=int(amount_msat / 1000),  # Convert msat to sats for storage
     )
     await db.insert("bitcoinswitch.payment", payment)
     return payment
@@ -111,6 +111,7 @@ async def get_switch_payment_by_payment_hash(
     return await db.fetchone(
         "SELECT * FROM bitcoinswitch.payment WHERE payment_hash = :h",
         {"h": payment_hash},
+        BitcoinswitchPayment,
     )
 
 
@@ -122,7 +123,7 @@ async def get_switch_payments(
     q = ",".join([f"'{w}'" for w in bitcoinswitch_ids])
     return await db.fetchall(
         f"""
-        SELECT * FROM bitcoinswitch.payment WHERE deviceid IN ({q})
+        SELECT * FROM bitcoinswitch.payment WHERE bitcoinswitch_id IN ({q})
         ORDER BY id
         """,
         model=BitcoinswitchPayment,

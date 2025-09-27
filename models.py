@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -10,6 +11,10 @@ class Switch(BaseModel):
     comment: bool = False
     variable: bool = False
     label: str | None = None
+
+    # Taproot Assets fields (optional, default to disabled)
+    accepts_assets: bool = False
+    accepted_asset_ids: List[str] = Field(default_factory=list)
 
 
 class CreateBitcoinswitch(BaseModel):
@@ -50,3 +55,8 @@ class BitcoinswitchPayment(BaseModel):
     # TODO: deprecated do not use this field anymore
     # should be deleted from the database in the future
     payload: str = ""
+
+    # Taproot Assets fields (optional, default to Lightning payment)
+    is_taproot: bool = False
+    asset_id: Optional[str] = None
+    asset_amount: Optional[int] = None

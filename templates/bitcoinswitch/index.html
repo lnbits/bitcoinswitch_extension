@@ -256,8 +256,12 @@
                 dense
                 v-model.trim="_switch.amount"
                 class="q-pb-md"
-                :label="'Amount (' + formDialog.data.currency + ') *'"
-              ></q-input>
+                :label="formDialog.data.accepts_assets ? 'Amount (assets) *' : 'Amount (' + formDialog.data.currency + ') *'"
+              >
+                <q-tooltip v-if="formDialog.data.accepts_assets">
+                  This is the number of assets to request. The invoice will show the sat equivalent at current market rates.
+                </q-tooltip>
+              </q-input>
             </div>
             <div class="col q-ml-md">
               <q-input
@@ -309,6 +313,62 @@
             </div>
           </div>
         </div>
+
+        <!-- Taproot Assets Configuration -->
+        <div class="row q-mt-md" v-if="taprootAssetsAvailable">
+          <div class="col">
+            <q-checkbox
+              v-model="formDialog.data.accepts_assets"
+              color="primary"
+              label="Accept Taproot Assets (applies to all switches)"
+              @update:model-value="val => handleAcceptAssetsChange(val)"
+            >
+              <q-tooltip>
+                When enabled, ALL switches in this Bitcoin Switch will accept taproot assets.
+                The amount field will represent the number of assets (not sats/fiat) for all switches.
+              </q-tooltip>
+            </q-checkbox>
+          </div>
+        </div>
+        <div class="row q-mt-sm" v-if="formDialog.data.accepts_assets && taprootAssetsAvailable">
+          <div class="col">
+            <q-select
+              filled
+              dense
+              multiple
+              emit-value
+              map-options
+              v-model="formDialog.data.accepted_asset_ids"
+              :options="availableAssets"
+              option-value="asset_id"
+              option-label="name"
+              label="Accepted Assets (applies to all switches)"
+              :loading="loadingAssets"
+            >
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label v-text="scope.opt.name"></q-item-label>
+                    <q-item-label caption v-text="scope.opt.asset_id.substring(0, 16) + '...'"></q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+              <template v-slot:selected-item="scope">
+                <q-chip
+                  removable
+                  dense
+                  @remove="scope.removeAtIndex(scope.index)"
+                  :tabindex="scope.tabindex"
+                  color="primary"
+                  text-color="white"
+                >
+                  {% raw %}{{ getAssetName(scope.opt) }}{% endraw %}
+                </q-chip>
+              </template>
+            </q-select>
+          </div>
+        </div>
+
         <div class="row q-mt-lg">
           <q-btn
             v-if="formDialog.data.id"
@@ -338,7 +398,7 @@
     <q-card v-if="qrCodeDialog.data" class="q-pa-lg lnbits__dialog-card">
       <lnbits-qrcode-lnurl
         :url="activeUrl"
-        @update:lnurl="v => lnurl = v"
+        @update:lnurl="v => lnurl = v.replace('lightning:', '')"
       ></lnbits-qrcode-lnurl>
       <div class="row q-mb-sm q-gutter-sm">
         <q-btn
@@ -350,6 +410,24 @@
           :label="switchLabel(_switch)"
         ></q-btn>
       </div>
+
+      <!-- Show accepted assets for this Bitcoin switch -->
+      <div v-if="qrCodeDialog.data && qrCodeDialog.data.switches && qrCodeDialog.data.switches.some(s => s.accepts_assets && s.accepted_asset_ids && s.accepted_asset_ids.length > 0)" class="q-mt-md">
+        <div class="text-subtitle2 q-mb-sm">This Bitcoin Switch accepts Taproot Assets:</div>
+        <div class="row q-gutter-sm">
+          <q-chip
+            v-for="assetId in (qrCodeDialog.data.switches.find(s => s.accepts_assets) || {}).accepted_asset_ids"
+            :key="assetId"
+            color="purple"
+            text-color="white"
+            size="sm"
+            icon="token"
+          >
+            {% raw %}{{ getAssetName(assetId) }}{% endraw %}
+          </q-chip>
+        </div>
+      </div>
+
       <div class="row">
         <q-btn v-close-popup flat color="grey">Close</q-btn>
         <q-btn outline color="grey" @click="triggerPin" class="q-ml-auto">

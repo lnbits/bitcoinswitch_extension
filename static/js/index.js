@@ -6,13 +6,16 @@ window.app = Vue.createApp({
       url: window.location.origin + '/bitcoinswitch/api/v1/lnurl',
       apiUrl: window.location.origin + '/bitcoinswitch/api/v1',
       publicUrl: window.location.origin + '/bitcoinswitch/public',
-      activeUrl: 0,
+      activeUrl: '',
       activePin: 0,
       lnurl: '',
       filter: '',
       currency: 'sat',
       currencies: [],
       bitcoinswitches: [],
+      taprootAssetsAvailable: false,
+      availableAssets: [],
+      loadingAssets: false,
       bitcoinswitchTable: {
         columns: [
           {
@@ -63,13 +66,20 @@ window.app = Vue.createApp({
           amount: 1,
           title: '',
           disabled: false,
-          disposable: true
+          disposable: true,
+          accepts_assets: false,
+          accepted_asset_ids: []
         }
       },
       qrCodeDialog: {
         show: false,
         data: null
       }
+    }
+  },
+  computed: {
+    cleanLnurl() {
+      return this.lnurl?.replace('lightning:', '') || ''
     }
   },
   watch: {
@@ -89,18 +99,41 @@ window.app = Vue.createApp({
       return label + ' pin: ' + _switch.pin + ' (' + _switch.duration + ' ms)'
     },
     generateSwitchUrl() {
+      console.log('generateSwitchUrl called')
+      console.log('qrCodeDialog.data:', this.qrCodeDialog.data)
+      console.log('activePin:', this.activePin)
+      console.log('switches:', this.qrCodeDialog.data?.switches)
+
       const _switch = this.qrCodeDialog.data.switches.find(
         s => s.pin === this.activePin
       )
+      console.log('Found switch:', _switch)
+
+      if (!_switch) {
+        console.error('No switch found for pin:', this.activePin)
+        return
+      }
+
       this.activeUrl = `${this.url}/${this.qrCodeDialog.data.id}?pin=${_switch.pin}`
+      console.log('Generated activeUrl:', this.activeUrl)
     },
     openQrCodeDialog(bitcoinswitchId) {
+      console.log('Opening QR dialog for bitcoinswitch:', bitcoinswitchId)
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
         id: bitcoinswitchId
       })
+      console.log('Found bitcoinswitch:', bitcoinswitch)
+      console.log('Bitcoinswitch switches:', bitcoinswitch?.switches)
+
       this.qrCodeDialog.data = _.clone(bitcoinswitch)
       this.activePin = bitcoinswitch.switches[0].pin
+      console.log('Set activePin to:', this.activePin)
+      console.log('Original bitcoinswitch ID:', bitcoinswitch.id)
+      console.log('Cloned qrCodeDialog.data.id:', this.qrCodeDialog.data.id)
       this.qrCodeDialog.show = true
+
+      // Manually trigger URL generation since watcher might not fire
+      this.generateSwitchUrl()
     },
     addSwitch() {
       this.formDialog.data.switches.push({
@@ -116,11 +149,14 @@ window.app = Vue.createApp({
     },
     clearFormDialog() {
       this.formDialog.data = {
+        switches: [],
         lnurl_toggle: false,
         show_message: false,
         show_ack: false,
         show_price: 'None',
-        title: ''
+        title: '',
+        accepts_assets: false,
+        accepted_asset_ids: []
       }
     },
     cancelFormDialog() {
@@ -131,26 +167,48 @@ window.app = Vue.createApp({
       this.clearFormDialog()
       this.formDialog.show = false
       this.formDialog.data = {
+        switches: [],
         is_unique: false,
         disabled: false,
-        disposable: true
+        disposable: true,
+        accepts_assets: false,
+        accepted_asset_ids: []
       }
     },
     sendFormData() {
+      const processedData = this.processFormData(this.formDialog.data)
       if (this.formDialog.data.id) {
-        this.updateBitcoinswitch()
+        this.updateBitcoinswitch(processedData)
       } else {
-        this.createBitcoinswitch()
+        this.createBitcoinswitch(processedData)
       }
     },
 
-    createBitcoinswitch() {
+    processFormData(data) {
+      // Filter out undefined/null/empty values
+      const updatedData = Object.entries(data)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+
+      // Apply global taproot settings if needed
+      if (data.accepts_assets && data.switches) {
+        updatedData.switches = data.switches.map(sw => ({
+          ...sw,
+          accepts_assets: true,
+          accepted_asset_ids: data.accepted_asset_ids || []
+        }))
+      }
+
+      return updatedData
+    },
+
+    createBitcoinswitch(processedData) {
       LNbits.api
         .request(
           'POST',
           this.apiUrl,
           this.g.user.wallets[0].adminkey,
-          this.formDialog.data
+          processedData
         )
         .then(response => {
           this.bitcoinswitches.push(response.data)
@@ -160,13 +218,13 @@ window.app = Vue.createApp({
           LNbits.utils.notifyApiError(error)
         })
     },
-    updateBitcoinswitch() {
+    updateBitcoinswitch(processedData) {
       LNbits.api
         .request(
           'PUT',
           this.apiUrl + '/' + this.formDialog.data.id,
           this.g.user.wallets[0].adminkey,
-          this.formDialog.data
+          processedData
         )
         .then(response => {
           const index = this.bitcoinswitches.findIndex(
@@ -231,6 +289,19 @@ window.app = Vue.createApp({
         id: bitcoinswitchId
       })
       this.formDialog.data = _.clone(bitcoinswitch)
+
+      // Extract global taproot settings
+      if (bitcoinswitch.switches?.length > 0) {
+        const firstSwitchWithAssets = bitcoinswitch.switches.find(sw => sw.accepts_assets)
+        if (firstSwitchWithAssets) {
+          this.formDialog.data.accepts_assets = true
+          this.formDialog.data.accepted_asset_ids = firstSwitchWithAssets.accepted_asset_ids || []
+        } else {
+          this.formDialog.data.accepts_assets = false
+          this.formDialog.data.accepted_asset_ids = []
+        }
+      }
+
       this.formDialog.show = true
     },
     copyDeviceString(bitcoinswitchId) {
@@ -242,10 +313,91 @@ window.app = Vue.createApp({
         this.bitcoinswitchTable.columns,
         this.bitcoinswitches
       )
+    },
+
+    // Taproot Assets methods
+    handleAcceptAssetsChange(val) {
+      if (!val) {
+        this.formDialog.data.accepted_asset_ids = []
+      }
+      // Update all switches to use global setting
+      this.formDialog.data.switches.forEach(sw => {
+        sw.accepts_assets = val
+        sw.accepted_asset_ids = val ? this.formDialog.data.accepted_asset_ids : []
+      })
+    },
+
+    async checkTaprootAssetsAvailability() {
+      console.log('Checking taproot assets availability...')
+      try {
+        const response = await LNbits.api.request(
+          'GET',
+          '/api/v1/extension',
+          this.g.user.wallets[0].adminkey
+        )
+
+        console.log('Extensions response:', response)
+        console.log('Extensions data:', response.data)
+
+        this.taprootAssetsAvailable = response.data.some(
+          ext => ext.code === 'taproot_assets'
+        )
+
+        console.log('Taproot available:', this.taprootAssetsAvailable)
+
+        if (this.taprootAssetsAvailable) {
+          await this.loadAvailableAssets()
+        }
+      } catch (error) {
+        console.error('Error checking taproot availability:', error)
+        this.taprootAssetsAvailable = false
+      }
+    },
+
+    async loadAvailableAssets() {
+      if (!this.taprootAssetsAvailable) return
+
+      this.loadingAssets = true
+      try {
+        const response = await LNbits.api.request(
+          'GET',
+          '/taproot_assets/api/v1/taproot/listassets',
+          this.g.user.wallets[0].adminkey
+        )
+
+        this.availableAssets = response.data.map(asset => ({
+          asset_id: asset.asset_id,
+          name: asset.name || `Asset ${asset.asset_id.substring(0, 8)}...`,
+          balance: asset.balance || 0
+        }))
+      } catch (error) {
+        this.availableAssets = []
+      } finally {
+        this.loadingAssets = false
+      }
+    },
+
+    hasTaprootAssets(bitcoinswitch) {
+      return bitcoinswitch.switches?.some(s =>
+        s.accepts_assets && s.accepted_asset_ids?.length > 0
+      )
+    },
+
+    getAssetName(assetIdOrObject) {
+      // Handle both asset_id string and full asset object
+      const assetId = typeof assetIdOrObject === 'string'
+        ? assetIdOrObject
+        : assetIdOrObject?.asset_id
+
+      if (!assetId) return 'Unknown Asset'
+
+      const asset = this.availableAssets.find(a => a.asset_id === assetId)
+      return asset ? asset.name : `${assetId.substring(0, 8)}...`
     }
   },
   created() {
     this.getBitcoinswitches()
+    this.checkTaprootAssetsAvailability()
     LNbits.api
       .request('GET', '/api/v1/currencies')
       .then(response => {

@@ -48,9 +48,17 @@ async def on_invoice_paid(payment: Payment) -> None:
     duration = _switch.duration
 
     if _switch.variable is True:
-        duration = round(
-            (switch_payment.sats / 1000) / _switch.amount * _switch.duration
-        )
+        # Handle variable time calculations for both Lightning and Taproot payments
+        if hasattr(switch_payment, 'is_taproot') and switch_payment.is_taproot and switch_payment.asset_amount:
+            # For Taproot payments, use asset amount for variable time calculation
+            duration = round(
+                (switch_payment.asset_amount / _switch.amount) * _switch.duration
+            )
+        else:
+            # For Lightning payments, use original logic
+            duration = round(
+                (switch_payment.sats / 1000) / _switch.amount * _switch.duration
+            )
 
     payload = f"{_switch.pin}-{duration}"
 
