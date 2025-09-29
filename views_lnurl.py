@@ -146,10 +146,10 @@ async def lnurl_callback(
     )
 
     await create_switch_payment(
+        payment_hash=payment.payment_hash,
         switch_id=switch.id,
         pin=pin,
         amount_msat=amount,
-        payment_hash=payment.payment_hash,
     )
 
     message = f"{int(amount / 1000)}sats sent"
@@ -197,10 +197,10 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
 
     # Create payment record with taproot fields
     payment_record = await create_switch_payment(
+        payment_hash=taproot_result["payment_hash"],
         switch_id=switch.id,
         pin=pin,
         amount_msat=amount,
-        payment_hash=taproot_result["payment_hash"],
     )
 
     # Update with taproot-specific fields if available
