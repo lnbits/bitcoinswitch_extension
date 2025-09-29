@@ -61,11 +61,24 @@ async def lnurl_params(
     )
     # let the max be 100x the min if variable pricing is enabled
     max_sendable = price_msat * 100 if _switch.variable else price_msat
-    url = request.url_for("bitcoinswitch.lnurl_cb", switch_id=bitcoinswitch_id, pin=pin)
+
+    # Build callback URL with asset support information if applicable
+    base_url = request.url_for("bitcoinswitch.lnurl_cb", switch_id=bitcoinswitch_id, pin=pin)
+    callback_url_str = str(base_url)
+
+    # Encode Taproot Asset support in callback URL parameters
+    if TAPROOT_AVAILABLE and hasattr(_switch, 'accepts_assets') and _switch.accepts_assets:
+        if _switch.accepted_asset_ids:
+            # Encode asset support in URL parameters
+            asset_ids_param = "|".join(_switch.accepted_asset_ids)
+            callback_url_str += f"?supports_assets=true&asset_ids={asset_ids_param}"
+            logger.info(f"Switch {bitcoinswitch_id} callback URL encoded with taproot assets: {_switch.accepted_asset_ids}")
+
     try:
-        callback_url = parse_obj_as(CallbackUrl, str(url))
+        callback_url = parse_obj_as(CallbackUrl, callback_url_str)
     except InvalidLnurl:
-        return LnurlErrorResponse(reason=f"Invalid LNURL callback URL: {url!s}")
+        return LnurlErrorResponse(reason=f"Invalid LNURL callback URL: {callback_url_str!s}")
+
     res = LnurlPayResponse(
         callback=callback_url,
         minSendable=MilliSatoshi(price_msat),
@@ -74,16 +87,6 @@ async def lnurl_params(
     )
     if _switch.comment is True:
         res.commentAllowed = 255
-
-    # Add Taproot Assets support if enabled on this switch
-    if TAPROOT_AVAILABLE and hasattr(_switch, 'accepts_assets') and _switch.accepts_assets:
-        if _switch.accepted_asset_ids:
-            logger.info(f"Switch {bitcoinswitch_id} accepts taproot assets: {_switch.accepted_asset_ids}")
-            # Convert to dict and add custom Taproot Asset fields
-            res_dict = res.dict()
-            res_dict["acceptsAssets"] = True
-            res_dict["acceptedAssetIds"] = _switch.accepted_asset_ids
-            return JSONResponse(content=res_dict)
 
     return res
 
@@ -213,9 +216,11 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     except:
         asset_name = f"asset {asset_id[:8]}..."
 
-    message = f"{asset_amount} units of {asset_name} requested"
+    # Clean success message without redundant "units requested" text
     if switch.password and switch.password != comment:
-        message = f"{message}, but password was incorrect! :("
+        message = "Password was incorrect! :("
+    else:
+        message = f"{asset_amount} {asset_name} sent"
 
     return LnurlPayActionResponse(
         pr=parse_obj_as(LightningInvoice, taproot_result["payment_request"]),

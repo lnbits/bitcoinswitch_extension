@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,7 +14,7 @@ class Switch(BaseModel):
 
     # Taproot Assets fields (optional, default to disabled)
     accepts_assets: bool = False
-    accepted_asset_ids: List[str] = Field(default_factory=list)
+    accepted_asset_ids: list[str] = Field(default_factory=list)
 
 
 class CreateBitcoinswitch(BaseModel):
