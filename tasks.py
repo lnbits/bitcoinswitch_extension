@@ -21,7 +21,11 @@ async def wait_for_paid_invoices():
 
 
 async def on_invoice_paid(payment: Payment) -> None:
+    logger.info(f"BitcoinSwitch: Processing payment {payment.payment_hash}")
+    logger.info(f"BitcoinSwitch: Payment extra data: {payment.extra}")
+
     if payment.extra.get("tag") != "Switch":
+        logger.info(f"BitcoinSwitch: Ignoring payment - tag is {payment.extra.get('tag')} not 'Switch'")
         return
 
     switch_payment = await get_switch_payment_by_payment_hash(payment.payment_hash)
@@ -31,6 +35,7 @@ async def on_invoice_paid(payment: Payment) -> None:
         )
         return
 
+    logger.info(f"BitcoinSwitch: Found switch payment: {switch_payment}")
     bitcoinswitch = await get_bitcoinswitch(switch_payment.bitcoinswitch_id)
     if not bitcoinswitch:
         logger.error("no bitcoinswitch found for payment.")
@@ -71,4 +76,7 @@ async def on_invoice_paid(payment: Payment) -> None:
         logger.info(f"Wrong password entered for bitcoin switch: {bitcoinswitch.id}")
         return
 
-    return await websocket_manager.send(bitcoinswitch.id, payload)
+    logger.info(f"BitcoinSwitch: Sending websocket payload '{payload}' to switch {bitcoinswitch.id}")
+    result = await websocket_manager.send(bitcoinswitch.id, payload)
+    logger.info(f"BitcoinSwitch: Websocket send result: {result}")
+    return result

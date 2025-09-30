@@ -20,7 +20,11 @@ from pydantic import parse_obj_as
 from loguru import logger
 
 from .crud import create_switch_payment, get_bitcoinswitch
-from .services.taproot_integration import TaprootIntegration
+from .services.taproot_integration import (
+    TAPROOT_AVAILABLE as TAPROOT_SERVICE_AVAILABLE,
+    create_taproot_invoice,
+    get_asset_name
+)
 from .services.config import config
 # Check if taproot_assets extension is available
 import importlib
@@ -194,23 +198,23 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     logger.info(f"  - Calculated asset_amount: {asset_amount}")
     logger.info(f"  - Asset ID: {asset_id}")
 
-    # Create Taproot Asset invoice
-    taproot_result, taproot_error = await TaprootIntegration.create_rfq_invoice(
+    # Create Taproot Asset invoice using simplified API
+    taproot_result = await create_taproot_invoice(
         asset_id=asset_id,
         amount=asset_amount,
         description=f"{switch.title} (pin: {pin})",
         wallet_id=switch.wallet,
         user_id=wallet.user,
+        expiry=config.taproot_payment_expiry,
         extra={
             "tag": "Switch",
             "pin": pin,
             "comment": comment,
-        },
-        expiry=config.taproot_payment_expiry
+        }
     )
 
-    if not taproot_result or taproot_error:
-        raise Exception(f"Failed to create RFQ invoice: {taproot_error}")
+    if not taproot_result:
+        raise Exception("Failed to create taproot invoice")
 
     # Create payment record with taproot fields
     payment_record = await create_switch_payment(
@@ -228,10 +232,10 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
         await update_switch_payment(payment_record)
 
     # Get asset name for user-friendly message
-    try:
-        asset_name = await get_asset_name(asset_id, wallet.user)
-    except:
-        asset_name = f"asset {asset_id[:8]}..."
+    from lnbits.core.models import WalletTypeInfo
+    from lnbits.core.models.wallets import KeyType
+    wallet_info = WalletTypeInfo(key_type=KeyType.admin, wallet=wallet)
+    asset_name = await get_asset_name(asset_id, wallet_info)
 
     # Clean success message without redundant "units requested" text
     if switch.password and switch.password != comment:
@@ -246,14 +250,3 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     )
 
 
-async def get_asset_name(asset_id: str, user_id: str) -> str:
-    """Get human-readable asset name - simplified version."""
-    try:
-        from lnbits.extensions.taproot_assets.crud.assets import get_assets
-        assets = await get_assets(user_id)
-        for asset in assets:
-            if asset.asset_id == asset_id:
-                return asset.name
-        return f"asset {asset_id[:8]}..."
-    except:
-        return f"asset {asset_id[:8]}..."
