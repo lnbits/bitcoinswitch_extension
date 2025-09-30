@@ -13,7 +13,6 @@ Key features:
 """
 # Standard library imports
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 # Third-party imports
 import httpx
@@ -43,7 +42,7 @@ class RateService:
         wallet_id: str,
         user_id: str,
         asset_amount: int = 1
-    ) -> Optional[float]:
+    ) -> float | None:
         """
         Get current exchange rate for an asset using RFQ quote.
 
@@ -120,7 +119,7 @@ class RateService:
         Args:
             quoted_rate: The original quoted rate to compare against
             current_rate: The current market rate
-            tolerance: Optional custom tolerance (defaults to config.rate_tolerance)
+            tolerance: float | None custom tolerance (defaults to config.rate_tolerance)
 
         Returns:
             bool: True if the current rate is within tolerance of quoted rate

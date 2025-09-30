@@ -1,8 +1,6 @@
 import json
-from typing import Optional
 
 from fastapi import APIRouter, Query, Request
-from fastapi.responses import JSONResponse
 from lnbits.core.services import create_invoice, websocket_manager
 from lnbits.core.crud import get_wallet
 from lnbits.utils.exchange_rates import fiat_amount_as_satoshis
@@ -27,6 +25,7 @@ from .services.config import config
 # Check if taproot_assets extension is available
 import importlib
 TAPROOT_AVAILABLE = importlib.util.find_spec("lnbits.extensions.taproot_assets") is not None
+
 if not TAPROOT_AVAILABLE:
     logger.info("Taproot services not available - running in Lightning-only mode")
 
@@ -97,7 +96,7 @@ async def lnurl_callback(
     pin: int,
     amount: int | None = Query(None),
     comment: str | None = Query(None),
-    asset_id: Optional[str] = Query(None),
+    asset_id: str | None = Query(None),
 ) -> LnurlPayActionResponse | LnurlErrorResponse:
     if comment and len(comment) > 255:
         return LnurlErrorResponse(reason="Comment too long, max 255 characters.")
@@ -117,14 +116,26 @@ async def lnurl_callback(
         return LnurlErrorResponse(reason="No active bitcoinswitch connections.")
 
     # Check for Taproot Asset payment
+    logger.info(f"TAPROOT CHECK: TAPROOT_AVAILABLE={TAPROOT_AVAILABLE}, asset_id={asset_id}")
+    if hasattr(_switch, 'accepts_assets'):
+        logger.info(f"Switch accepts_assets: {_switch.accepts_assets}")
+    else:
+        logger.info("Switch has no accepts_assets attribute")
+
     if TAPROOT_AVAILABLE and asset_id and hasattr(_switch, 'accepts_assets') and _switch.accepts_assets:
+        logger.info(f"Switch accepted_asset_ids: {_switch.accepted_asset_ids}")
         try:
             if asset_id in _switch.accepted_asset_ids:
+                logger.info(f"Processing taproot asset payment for {asset_id}")
                 return await handle_taproot_payment(
                     switch, _switch, switch_id, pin, amount, comment, asset_id
                 )
+            else:
+                logger.warning(f"Asset {asset_id} not in accepted list: {_switch.accepted_asset_ids}")
         except Exception as e:
             logger.error(f"Taproot payment failed, falling back to Lightning: {e}")
+    else:
+        logger.info("Taproot conditions not met, using Lightning payment")
 
     # Standard Lightning payment (original logic)
     memo = f"{switch.title} (pin: {pin})"
@@ -176,6 +187,12 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     # Calculate asset amount (simplified - could use RFQ for dynamic pricing)
     requested_sats = amount / 1000
     asset_amount = int(_switch.amount)  # Use switch configured amount
+
+    logger.info(f"TAPROOT PAYMENT DEBUG:")
+    logger.info(f"  - Lightning amount requested: {amount} msat ({requested_sats} sats)")
+    logger.info(f"  - Switch configured amount: {_switch.amount}")
+    logger.info(f"  - Calculated asset_amount: {asset_amount}")
+    logger.info(f"  - Asset ID: {asset_id}")
 
     # Create Taproot Asset invoice
     taproot_result, taproot_error = await TaprootIntegration.create_rfq_invoice(

@@ -122,7 +122,7 @@ async def get_switch_payments(
     q = ",".join([f"'{w}'" for w in bitcoinswitch_ids])
     return await db.fetchall(
         f"""
-        SELECT * FROM bitcoinswitch.payment WHERE bitcoinswitch_id IN ({q})
+        SELECT * FROM bitcoinswitch.payment WHERE deviceid IN ({q})
         ORDER BY id
         """,
         model=BitcoinswitchPayment,

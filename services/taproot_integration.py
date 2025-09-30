@@ -11,19 +11,14 @@ Key features:
 - RFQ invoice creation for asset payments
 - Structured error handling with detailed error reporting
 """
-# Standard library imports
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, Tuple
 
-# Third-party imports
 from loguru import logger
+from pydantic import BaseModel
 
-# LNbits imports
 from lnbits.core.crud import get_installed_extensions
 
 
-@dataclass
-class TaprootError:
+class TaprootError(BaseModel):
     """
     Error class for structured Taproot integration error reporting.
 
@@ -41,7 +36,7 @@ class TaprootError:
     """
     code: str
     message: str
-    details: Optional[Dict[str, Any]] = None
+    details: dict | None = None
 
     def __str__(self) -> str:
         """Returns formatted error string with code and message."""
@@ -59,7 +54,7 @@ class TaprootIntegration:
     """
 
     @staticmethod
-    async def is_taproot_available() -> Tuple[bool, Optional[TaprootError]]:
+    async def is_taproot_available() -> tuple[bool, TaprootError | None]:
         """
         Check if Taproot Assets extension is installed and active.
 
@@ -70,7 +65,7 @@ class TaprootIntegration:
         Returns:
             Tuple containing:
             - bool: True if extension is available and active
-            - Optional[TaprootError]: Error details if check fails, None if successful
+            - TaprootError | None: Error details if check fails, None if successful
 
         Example:
             available, error = await TaprootIntegration.is_taproot_available()
@@ -106,10 +101,10 @@ class TaprootIntegration:
         description: str,
         wallet_id: str,
         user_id: str,
-        extra: Dict[str, Any],
-        peer_pubkey: Optional[str] = None,
-        expiry: Optional[int] = None
-    ) -> Tuple[Optional[Dict[str, Any]], Optional[TaprootError]]:
+        extra: dict,
+        peer_pubkey: str | None = None,
+        expiry: int | None = None
+    ) -> tuple[dict | None, TaprootError | None]:
         """
         Create a Taproot Asset invoice using RFQ (Request for Quote) process.
 
@@ -124,17 +119,17 @@ class TaprootIntegration:
             wallet_id: LNbits wallet ID for the recipient
             user_id: LNbits user ID of the recipient
             extra: Additional metadata for the invoice
-            peer_pubkey: Optional specific peer to use for the trade
-            expiry: Optional invoice expiry time in seconds
+            peer_pubkey: str | None specific peer to use for the trade
+            expiry: int | None invoice expiry time in seconds
 
         Returns:
             Tuple containing:
-            - Optional[Dict]: Invoice data if successful, with keys:
+            - dict | None: Invoice data if successful, with keys:
                 - payment_hash: Hash of the payment
                 - payment_request: BOLT11 invoice
                 - checking_id: ID for checking payment status
                 - is_rfq: Always True for RFQ invoices
-            - Optional[TaprootError]: Error details if creation fails
+            - TaprootError | None: Error details if creation fails
 
         Note:
             The peer_pubkey is optional - if not provided, the invoice service

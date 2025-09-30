@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -58,5 +57,5 @@ class BitcoinswitchPayment(BaseModel):
 
     # Taproot Assets fields (optional, default to Lightning payment)
     is_taproot: bool = False
-    asset_id: Optional[str] = None
-    asset_amount: Optional[int] = None
+    asset_id: str | None = None
+    asset_amount: int | None = None

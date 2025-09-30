@@ -65,61 +65,48 @@ async def m004_disposable(db):
 
 
 async def m005_taproot_assets_support(db):
-    """
-    Add Taproot Assets support to payment table.
-    """
-    # Add basic taproot identification fields
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN is_taproot BOOLEAN NOT NULL DEFAULT FALSE;
         """
     )
-
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN asset_id TEXT;
         """
     )
-
-    # Add market maker fields for rate tracking
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN quoted_rate REAL;
         """
     )
-
     await db.execute(
-        f"""
+        """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN quoted_at TIMESTAMP;
         """
     )
-
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN asset_amount INTEGER;
         """
     )
-
-    # Add RFQ (Request for Quote) fields
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN rfq_invoice_hash TEXT;
         """
     )
-
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
         ADD COLUMN rfq_asset_amount INTEGER;
         """
     )
-
     await db.execute(
         """
         ALTER TABLE bitcoinswitch.payment
