@@ -22,7 +22,7 @@ from loguru import logger
 from .crud import create_switch_payment, get_bitcoinswitch
 from .services.taproot_integration import (
     TAPROOT_AVAILABLE as TAPROOT_SERVICE_AVAILABLE,
-    create_taproot_invoice,
+    create_rfq_invoice,
     get_asset_name
 )
 from .services.rate_service import RateService
@@ -204,23 +204,23 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     logger.info(f"  - Calculated asset_amount: {asset_amount}")
     logger.info(f"  - Asset ID: {asset_id}")
 
-    # Create Taproot Asset invoice using simplified API
-    taproot_result = await create_taproot_invoice(
+    # Create Taproot Asset invoice using original working API
+    taproot_result, taproot_error = await create_rfq_invoice(
         asset_id=asset_id,
         amount=asset_amount,
         description=f"{switch.title} (pin: {pin})",
         wallet_id=switch.wallet,
         user_id=wallet.user,
-        expiry=config.taproot_payment_expiry,
         extra={
             "tag": "Switch",
             "pin": pin,
             "comment": comment,
-        }
+        },
+        expiry=config.taproot_payment_expiry
     )
 
-    if not taproot_result:
-        raise Exception("Failed to create taproot invoice")
+    if not taproot_result or taproot_error:
+        raise Exception(f"Failed to create RFQ invoice: {taproot_error}")
 
     # Create payment record with taproot fields
     payment_record = await create_switch_payment(

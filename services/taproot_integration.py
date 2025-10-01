@@ -37,19 +37,30 @@ except ImportError as e:
             return []
 
 
-async def create_taproot_invoice(
+async def create_rfq_invoice(
     asset_id: str,
     amount: int,
     description: str,
     wallet_id: str,
     user_id: str,
-    expiry: int | None = None,
+    extra: dict,
     peer_pubkey: str | None = None,
-    extra: dict | None = None
-) -> dict | None:
-    """Create a Taproot Asset invoice using the taproot_assets extension."""
+    expiry: int | None = None
+) -> tuple[dict | None, str | None]:
+    """
+    Create a Taproot Asset invoice using RFQ (Request for Quote) process.
+
+    This restores the original working parameter order and return format.
+    """
     try:
-        # Create the invoice request
+        # Validate inputs
+        if not asset_id:
+            return None, "Asset ID is required"
+
+        if amount <= 0:
+            return None, f"Amount must be greater than 0, got {amount}"
+
+        # Create the invoice request with original parameter order
         invoice_request = TaprootInvoiceRequest(
             asset_id=asset_id,
             amount=amount,
@@ -66,17 +77,49 @@ async def create_taproot_invoice(
             wallet_id=wallet_id
         )
 
-        # Convert response to dict format expected by bitcoinswitch
-        return {
+        # Return in original format (tuple with result and error)
+        result = {
             "payment_hash": invoice_response.payment_hash,
             "payment_request": invoice_response.payment_request,
             "checking_id": invoice_response.checking_id,
             "is_rfq": True
         }
 
+        return result, None
+
     except Exception as e:
-        logger.error(f"Failed to create taproot invoice: {e}")
+        logger.error(f"Failed to create RFQ invoice: {e}")
+        return None, str(e)
+
+
+async def create_taproot_invoice(
+    asset_id: str,
+    amount: int,
+    description: str,
+    wallet_id: str,
+    user_id: str,
+    expiry: int | None = None,
+    peer_pubkey: str | None = None,
+    extra: dict | None = None
+) -> dict | None:
+    """Create a Taproot Asset invoice using the taproot_assets extension."""
+    # Use the working RFQ method internally
+    result, error = await create_rfq_invoice(
+        asset_id=asset_id,
+        amount=amount,
+        description=description,
+        wallet_id=wallet_id,
+        user_id=user_id,
+        extra=extra or {},
+        peer_pubkey=peer_pubkey,
+        expiry=expiry
+    )
+
+    if error:
+        logger.error(f"Failed to create taproot invoice: {error}")
         return None
+
+    return result
 
 
 async def get_asset_name(asset_id: str, wallet_info: WalletTypeInfo) -> str:
