@@ -25,6 +25,7 @@ from .services.taproot_integration import (
     create_taproot_invoice,
     get_asset_name
 )
+from .services.rate_service import RateService
 from .services.config import config
 # Check if taproot_assets extension is available
 import importlib
@@ -188,13 +189,18 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     if not wallet:
         return LnurlErrorResponse(reason="Wallet not found")
 
-    # Calculate asset amount (simplified - could use RFQ for dynamic pricing)
+    # Calculate asset amount using RFQ rate if available, otherwise use switch config
     requested_sats = amount / 1000
-    asset_amount = int(_switch.amount)  # Use switch configured amount
+    asset_amount = await calculate_asset_amount_with_rfq(
+        asset_id=asset_id,
+        requested_sats=requested_sats,
+        switch_amount=int(_switch.amount),
+        wallet_id=switch.wallet,
+        user_id=wallet.user
+    )
 
-    logger.info(f"TAPROOT PAYMENT DEBUG:")
+    logger.info(f"TAPROOT PAYMENT:")
     logger.info(f"  - Lightning amount requested: {amount} msat ({requested_sats} sats)")
-    logger.info(f"  - Switch configured amount: {_switch.amount}")
     logger.info(f"  - Calculated asset_amount: {asset_amount}")
     logger.info(f"  - Asset ID: {asset_id}")
 
@@ -228,6 +234,7 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     if hasattr(payment_record, 'is_taproot'):
         payment_record.is_taproot = True
         payment_record.asset_id = asset_id
+        payment_record.asset_amount = asset_amount
         from .crud import update_switch_payment
         await update_switch_payment(payment_record)
 
@@ -248,5 +255,37 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
         successAction=MessageAction(message=parse_obj_as(Max144Str, message)),
         disposable=switch.disposable,
     )
+
+
+async def calculate_asset_amount_with_rfq(
+    asset_id: str,
+    requested_sats: float,
+    switch_amount: int,
+    wallet_id: str,
+    user_id: str
+) -> int:
+    """Calculate asset amount using RFQ rate or fallback to switch configuration."""
+    try:
+        # Try to get current rate via RFQ
+        current_rate = await RateService.get_current_rate(
+            asset_id=asset_id,
+            wallet_id=wallet_id,
+            user_id=user_id,
+            asset_amount=switch_amount
+        )
+
+        if current_rate and current_rate > 0:
+            # Calculate asset amount based on real market rate
+            # current_rate is sats per asset unit
+            asset_amount = int(requested_sats / current_rate)
+            logger.info(f"RFQ rate calculation: {requested_sats} sats / {current_rate} sats/asset = {asset_amount} assets")
+            return max(1, asset_amount)
+        else:
+            logger.warning(f"No valid RFQ rate available, using switch config: {switch_amount} assets")
+            return switch_amount
+
+    except Exception as e:
+        logger.error(f"RFQ rate lookup failed: {e}, using switch config: {switch_amount} assets")
+        return switch_amount
 
 

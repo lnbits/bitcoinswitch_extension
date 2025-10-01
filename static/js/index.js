@@ -99,15 +99,9 @@ window.app = Vue.createApp({
       return label + ' pin: ' + _switch.pin + ' (' + _switch.duration + ' ms)'
     },
     generateSwitchUrl() {
-      console.log('generateSwitchUrl called')
-      console.log('qrCodeDialog.data:', this.qrCodeDialog.data)
-      console.log('activePin:', this.activePin)
-      console.log('switches:', this.qrCodeDialog.data?.switches)
-
       const _switch = this.qrCodeDialog.data.switches.find(
         s => s.pin === this.activePin
       )
-      console.log('Found switch:', _switch)
 
       if (!_switch) {
         console.error('No switch found for pin:', this.activePin)
@@ -115,21 +109,14 @@ window.app = Vue.createApp({
       }
 
       this.activeUrl = `${this.url}/${this.qrCodeDialog.data.id}?pin=${_switch.pin}`
-      console.log('Generated activeUrl:', this.activeUrl)
     },
     openQrCodeDialog(bitcoinswitchId) {
-      console.log('Opening QR dialog for bitcoinswitch:', bitcoinswitchId)
       const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
         id: bitcoinswitchId
       })
-      console.log('Found bitcoinswitch:', bitcoinswitch)
-      console.log('Bitcoinswitch switches:', bitcoinswitch?.switches)
 
       this.qrCodeDialog.data = _.clone(bitcoinswitch)
       this.activePin = bitcoinswitch.switches[0].pin
-      console.log('Set activePin to:', this.activePin)
-      console.log('Original bitcoinswitch ID:', bitcoinswitch.id)
-      console.log('Cloned qrCodeDialog.data.id:', this.qrCodeDialog.data.id)
       this.qrCodeDialog.show = true
 
       // Manually trigger URL generation since watcher might not fire
@@ -328,7 +315,6 @@ window.app = Vue.createApp({
     },
 
     async checkTaprootAssetsAvailability() {
-      console.log('Checking taproot assets availability...')
       try {
         const response = await LNbits.api.request(
           'GET',
@@ -336,14 +322,9 @@ window.app = Vue.createApp({
           this.g.user.wallets[0].adminkey
         )
 
-        console.log('Extensions response:', response)
-        console.log('Extensions data:', response.data)
-
         this.taprootAssetsAvailable = response.data.some(
           ext => ext.code === 'taproot_assets'
         )
-
-        console.log('Taproot available:', this.taprootAssetsAvailable)
 
         if (this.taprootAssetsAvailable) {
           await this.loadAvailableAssets()

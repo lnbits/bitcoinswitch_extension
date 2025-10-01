@@ -47,16 +47,7 @@ async def create_taproot_invoice(
     peer_pubkey: str | None = None,
     extra: dict | None = None
 ) -> dict | None:
-    """
-    Create a Taproot Asset invoice using the taproot_assets extension.
-
-    Returns:
-        dict with invoice data if successful, None if failed
-    """
-    if not TAPROOT_AVAILABLE:
-        logger.error("Cannot create taproot invoice - extension not available")
-        return None
-
+    """Create a Taproot Asset invoice using the taproot_assets extension."""
     try:
         # Create the invoice request
         invoice_request = TaprootInvoiceRequest(
@@ -90,9 +81,6 @@ async def create_taproot_invoice(
 
 async def get_asset_name(asset_id: str, wallet_info: WalletTypeInfo) -> str:
     """Get human-readable asset name."""
-    if not TAPROOT_AVAILABLE:
-        return f"asset {asset_id[:8]}..."
-
     try:
         assets = await AssetService.list_assets(wallet_info)
         for asset in assets:
