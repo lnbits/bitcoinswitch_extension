@@ -234,11 +234,7 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
         description=f"{switch.title} (pin: {pin})",
         wallet_id=switch.wallet,
         user_id=wallet.user,
-        extra={
-            "tag": "Switch",
-            "pin": pin,
-            "comment": comment,
-        },
+        extra={},
         peer_pubkey=peer_pubkey,
         expiry=config.taproot_payment_expiry
     )
