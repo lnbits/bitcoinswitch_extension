@@ -70,12 +70,27 @@ async def create_rfq_invoice(
             extra=extra or {}
         )
 
+        # DEBUG: Log exact parameters being passed to InvoiceService
+        logger.info(f"BITCOINSWITCH DEBUG: About to call InvoiceService.create_invoice")
+        logger.info(f"BITCOINSWITCH DEBUG: user_id={user_id}")
+        logger.info(f"BITCOINSWITCH DEBUG: wallet_id={wallet_id}")
+        logger.info(f"BITCOINSWITCH DEBUG: TaprootInvoiceRequest fields:")
+        logger.info(f"BITCOINSWITCH DEBUG:   asset_id={invoice_request.asset_id}")
+        logger.info(f"BITCOINSWITCH DEBUG:   amount={invoice_request.amount} (type: {type(invoice_request.amount)})")
+        logger.info(f"BITCOINSWITCH DEBUG:   description='{invoice_request.description}'")
+        logger.info(f"BITCOINSWITCH DEBUG:   expiry={invoice_request.expiry}")
+        logger.info(f"BITCOINSWITCH DEBUG:   peer_pubkey={invoice_request.peer_pubkey}")
+        logger.info(f"BITCOINSWITCH DEBUG:   extra={invoice_request.extra}")
+
         # Use InvoiceService directly from taproot_assets extension
         invoice_response = await InvoiceService.create_invoice(
             data=invoice_request,
             user_id=user_id,
             wallet_id=wallet_id
         )
+
+        logger.info(f"BITCOINSWITCH DEBUG: InvoiceService.create_invoice completed successfully")
+        logger.info(f"BITCOINSWITCH DEBUG: Response: payment_hash={invoice_response.payment_hash}")
 
         # Return in original format (tuple with result and error)
         result = {
