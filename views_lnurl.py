@@ -204,6 +204,29 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     logger.info(f"  - Calculated asset_amount: {asset_amount}")
     logger.info(f"  - Asset ID: {asset_id}")
 
+    # Get peer_pubkey from asset channel info (like the direct UI does)
+    peer_pubkey = None
+    try:
+        from lnbits.extensions.taproot_assets.services.asset_service import AssetService
+        from lnbits.core.models import WalletTypeInfo
+        from lnbits.core.models.wallets import KeyType
+
+        wallet_info = WalletTypeInfo(key_type=KeyType.admin, wallet=wallet)
+        assets = await AssetService.list_assets(wallet_info)
+
+        # Find the asset and get its peer_pubkey
+        for asset in assets:
+            if asset.get("asset_id") == asset_id and asset.get("channel_info") and asset["channel_info"].get("peer_pubkey"):
+                peer_pubkey = asset["channel_info"]["peer_pubkey"]
+                logger.info(f"  - Found peer_pubkey: {peer_pubkey[:16]}...")
+                break
+
+        if not peer_pubkey:
+            logger.warning(f"  - No peer_pubkey found for asset {asset_id}")
+
+    except Exception as e:
+        logger.error(f"Failed to get peer_pubkey: {e}")
+
     # Create Taproot Asset invoice using original working API
     taproot_result, taproot_error = await create_rfq_invoice(
         asset_id=asset_id,
@@ -216,6 +239,7 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
             "pin": pin,
             "comment": comment,
         },
+        peer_pubkey=peer_pubkey,
         expiry=config.taproot_payment_expiry
     )
 
