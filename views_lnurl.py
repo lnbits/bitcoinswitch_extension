@@ -300,10 +300,43 @@ async def calculate_asset_amount_with_rfq(
 
         if current_rate and current_rate > 0:
             # Calculate asset amount based on real market rate
-            # current_rate is sats per asset unit
-            asset_amount = int(requested_sats / current_rate)
-            logger.info(f"RFQ rate calculation: {requested_sats} sats / {current_rate} sats/asset = {asset_amount} assets")
-            return max(1, asset_amount)
+            # current_rate is sats per display unit, we need to convert to base units
+            display_units = int(requested_sats / current_rate)
+            logger.info(f"RFQ rate calculation: {requested_sats} sats / {current_rate} sats/display_unit = {display_units} display_units")
+
+            # Get asset decimal places to convert display units to base units
+            try:
+                from lnbits.extensions.taproot_assets.services.asset_service import AssetService
+                from lnbits.core.models import WalletTypeInfo
+                from lnbits.core.models.wallets import KeyType
+                from lnbits.core.crud import get_wallet
+
+                wallet = await get_wallet(wallet_id)
+                if wallet:
+                    wallet_info = WalletTypeInfo(key_type=KeyType.admin, wallet=wallet)
+                    assets = await AssetService.list_assets(wallet_info)
+
+                    # Find the specific asset
+                    asset_decimals = 0
+                    for asset in assets:
+                        if asset.get("asset_id") == asset_id:
+                            asset_decimals = asset.get("decimal_display", 0)
+                            break
+
+                    # Convert display units to base units
+                    if asset_decimals > 0:
+                        base_units = display_units * (10 ** asset_decimals)
+                        logger.info(f"Converting {display_units} display_units to {base_units} base_units (decimals={asset_decimals})")
+                        return max(1, base_units)
+                    else:
+                        logger.info(f"No decimals, using {display_units} units directly")
+                        return max(1, display_units)
+
+            except Exception as e:
+                logger.warning(f"Could not get asset decimals, using display units directly: {e}")
+                return max(1, display_units)
+
+            return max(1, display_units)
         else:
             logger.warning(f"No valid RFQ rate available, using switch config: {switch_amount} assets")
             return switch_amount
