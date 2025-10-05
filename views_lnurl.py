@@ -55,14 +55,49 @@ async def lnurl_params(
     if not _switch:
         return LnurlErrorResponse(reason=f"Switch with pin {pin} not found.")
 
-    price_msat = int(
-        (
-            await fiat_amount_as_satoshis(float(_switch.amount), switch.currency)
-            if switch.currency != "sat"
-            else float(_switch.amount)
-        )
-        * 1000
+    # Calculate price in millisats
+    base_amount_sats = (
+        await fiat_amount_as_satoshis(float(_switch.amount), switch.currency)
+        if switch.currency != "sat"
+        else float(_switch.amount)
     )
+
+    # If this switch accepts assets, we need to convert asset amount to sats using RFQ rate
+    if TAPROOT_AVAILABLE and hasattr(_switch, 'accepts_assets') and _switch.accepts_assets and _switch.accepted_asset_ids:
+        try:
+            # The _switch.amount represents asset units, need to convert to sats
+            # Use the first accepted asset ID for rate lookup
+            asset_id = _switch.accepted_asset_ids[0]
+
+            # Get the current RFQ rate for this asset
+            from .services.rate_service import RateService
+            from lnbits.core.crud import get_wallet
+
+            # Get wallet for rate lookup
+            wallet = await get_wallet(switch.wallet)
+            if wallet:
+                current_rate = await RateService.get_current_rate(
+                    asset_id=asset_id,
+                    wallet_id=switch.wallet,
+                    user_id=wallet.user,
+                    asset_amount=int(_switch.amount)
+                )
+
+                if current_rate and current_rate > 0:
+                    # Convert asset amount to sats using RFQ rate
+                    asset_amount_display_units = float(_switch.amount)
+                    sats_required = asset_amount_display_units * current_rate
+                    logger.info(f"Asset switch pricing: {asset_amount_display_units} {asset_id[:8]}... = {sats_required} sats (rate: {current_rate})")
+                    base_amount_sats = sats_required
+                else:
+                    logger.warning(f"No valid RFQ rate for asset {asset_id}, using configured amount as sats")
+            else:
+                logger.warning(f"No wallet found for switch {bitcoinswitch_id}, using configured amount as sats")
+
+        except Exception as e:
+            logger.error(f"Failed to get RFQ rate for asset switch pricing: {e}, using configured amount as sats")
+
+    price_msat = int(base_amount_sats * 1000)
     # let the max be 100x the min if variable pricing is enabled
     max_sendable = price_msat * 100 if _switch.variable else price_msat
 
@@ -304,39 +339,37 @@ async def calculate_asset_amount_with_rfq(
             display_units = int(requested_sats / current_rate)
             logger.info(f"RFQ rate calculation: {requested_sats} sats / {current_rate} sats/display_unit = {display_units} display_units")
 
-            # Get asset decimal places to convert display units to base units
+            # Get asset decimal places from channel data (more reliable than AssetService)
             try:
-                from lnbits.extensions.taproot_assets.services.asset_service import AssetService
-                from lnbits.core.models import WalletTypeInfo
-                from lnbits.core.models.wallets import KeyType
-                from lnbits.core.crud import get_wallet
+                from lnbits.extensions.taproot_assets.tapd.taproot_assets import TaprootAssets
+                from lnbits.extensions.taproot_assets.tapd.taproot_factory import TaprootAssetsFactory
 
-                wallet = await get_wallet(wallet_id)
-                if wallet:
-                    wallet_info = WalletTypeInfo(key_type=KeyType.admin, wallet=wallet)
-                    assets = await AssetService.list_assets(wallet_info)
+                # Get a taproot wallet instance to access channel data
+                taproot_wallet = await TaprootAssetsFactory.create_wallet(
+                    user_id=user_id,
+                    wallet_id=wallet_id
+                )
 
-                    # Find the specific asset
-                    asset_decimals = 0
-                    for asset in assets:
-                        if asset.get("asset_id") == asset_id:
-                            asset_decimals = asset.get("decimal_display", 0)
-                            break
+                # Get channel assets which has reliable decimal info
+                channel_assets = await taproot_wallet.node.list_channel_assets(force_refresh=True)
 
-                    # Convert display units to base units
-                    if asset_decimals > 0:
-                        base_units = display_units * (10 ** asset_decimals)
-                        logger.info(f"Converting {display_units} display_units to {base_units} base_units (decimals={asset_decimals})")
-                        return max(1, base_units)
-                    else:
-                        logger.info(f"No decimals, using {display_units} units directly")
-                        return max(1, display_units)
+                # Find the specific asset in channel data
+                asset_decimals = 0
+                for asset_data in channel_assets:
+                    if asset_data.get("asset_id") == asset_id:
+                        asset_decimals = asset_data.get("decimal_display", 0)
+                        logger.info(f"Found asset {asset_id[:8]}... with {asset_decimals} decimals from channel data")
+                        break
 
-            except Exception as e:
-                logger.warning(f"Could not get asset decimals, using display units directly: {e}")
+                # Return display units directly - taproot assets invoice service expects display units
+                logger.info(f"Using {display_units} display_units for invoice (asset has {asset_decimals} decimals)")
                 return max(1, display_units)
 
-            return max(1, display_units)
+            except Exception as e:
+                logger.warning(f"Could not get asset decimals from channel data: {e}")
+                # Return display units directly - taproot assets invoice service expects display units
+                logger.info(f"Using {display_units} display_units for invoice (fallback)")
+                return max(1, display_units)
         else:
             logger.warning(f"No valid RFQ rate available, using switch config: {switch_amount} assets")
             return switch_amount
