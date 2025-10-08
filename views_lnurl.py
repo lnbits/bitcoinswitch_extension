@@ -86,10 +86,8 @@ async def lnurl_params(
                 if current_rate and current_rate > 0:
                     # Convert asset amount to sats using RFQ rate
                     asset_amount_display_units = float(_switch.amount)
-                    # TEMPORARY FIX: RFQ rates are 10x too low, multiply by 10 to match direct taproot invoices
-                    corrected_rate = current_rate * 10
-                    sats_required = asset_amount_display_units * corrected_rate
-                    logger.info(f"Asset switch pricing: {asset_amount_display_units} {asset_id[:8]}... = {sats_required} sats (RFQ rate: {current_rate} → corrected: {corrected_rate})")
+                    sats_required = asset_amount_display_units * current_rate
+                    logger.info(f"Asset switch pricing: {asset_amount_display_units} {asset_id[:8]}... = {sats_required} sats (rate: {current_rate} sats/display_unit)")
                     base_amount_sats = sats_required
                 else:
                     logger.warning(f"No valid RFQ rate for asset {asset_id}, using configured amount as sats")
