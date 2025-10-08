@@ -50,6 +50,14 @@ class RateService:
         without creating an actual invoice. Uses the Taproot Assets API to get the
         current market rate for the specified asset.
 
+        Why this is needed:
+            When a user scans a BitcoinSwitch LNURL QR code that accepts Taproot Assets,
+            their Lightning wallet needs to know "how many sats is this worth?" to display
+            the payment amount. The switch is configured in asset units (e.g., "5 USDT"),
+            but LNURL responses must specify amounts in millisatoshis. This rate fetch
+            converts asset amounts to sat amounts at the current market rate, allowing
+            the user's wallet to show the correct payment value before they confirm.
+
         Args:
             asset_id: The Taproot Asset ID to get the rate for
             wallet_id: LNbits wallet ID for API authentication
@@ -63,31 +71,21 @@ class RateService:
             The rate returned is in satoshis per one unit of the asset.
             For example, if the rate is 1000, it means 1 unit of the asset = 1000 sats.
         """
-        logger.info(f"RATE SERVICE DEBUG: get_current_rate called with:")
-        logger.info(f"  - asset_id: {asset_id}")
-        logger.info(f"  - wallet_id: {wallet_id}")
-        logger.info(f"  - user_id: {user_id}")
-        logger.info(f"  - asset_amount: {asset_amount}")
-
         try:
-            logger.info(f"RATE SERVICE DEBUG: Getting wallet")
             # Get wallet for API key
             wallet = await get_wallet(wallet_id)
             if not wallet:
-                logger.error(f"RATE SERVICE DEBUG: Wallet {wallet_id} not found")
+                logger.error(f"Wallet {wallet_id} not found")
                 return None
 
-            logger.info(f"RATE SERVICE DEBUG: Building API URL")
             # Build API URL
             base_url = settings.lnbits_baseurl
             if not base_url.startswith("http"):
                 base_url = f"http://{base_url}"
 
             url = f"{base_url}/taproot_assets/api/v1/taproot/rate/{asset_id}"
-            logger.info(f"RATE SERVICE DEBUG: API URL: {url}")
 
             # Make API request for 1 unit to get the true per-unit rate
-            logger.info(f"RATE SERVICE DEBUG: Making HTTP request")
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     url,
@@ -95,27 +93,23 @@ class RateService:
                     headers={"X-Api-Key": wallet.adminkey},
                     timeout=config.http_timeout
                 )
-                logger.info(f"RATE SERVICE DEBUG: HTTP response status: {response.status_code}")
 
                 if response.status_code == 200:
                     data = response.json()
-                    logger.info(f"RATE SERVICE DEBUG: API response data: {data}")
 
                     if data.get("rate_per_unit"):
                         rate = data["rate_per_unit"]
-                        logger.info(f"RATE SERVICE DEBUG: Got rate from API: {rate} sats/unit for {asset_id[:8]}...")
-                        logger.info(f"RATE SERVICE DEBUG: Returning rate: {rate}")
+                        logger.info(f"Got rate for asset {asset_id[:8]}...: {rate} sats/unit")
                         return rate
                     else:
-                        logger.warning(f"RATE SERVICE DEBUG: No rate returned from API: {data.get('error', 'Unknown error')}")
+                        logger.warning(f"No rate returned for asset {asset_id[:8]}...: {data.get('error', 'Unknown error')}")
                         return None
                 else:
-                    logger.error(f"RATE SERVICE DEBUG: API request failed with status {response.status_code}")
-                    logger.error(f"RATE SERVICE DEBUG: Response text: {response.text}")
+                    logger.error(f"Rate API request failed with status {response.status_code}: {response.text}")
                     return None
 
         except Exception as e:
-            logger.error(f"RATE SERVICE DEBUG: Exception in get_current_rate: {e}")
+            logger.error(f"Exception fetching rate for asset {asset_id[:8]}...: {e}")
             return None
 
     @staticmethod

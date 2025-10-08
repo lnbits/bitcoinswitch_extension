@@ -277,16 +277,11 @@ window.app = Vue.createApp({
       })
       this.formDialog.data = _.clone(bitcoinswitch)
 
-      // Extract global taproot settings
+      // Extract global taproot settings from first switch (UI enforces consistency across all switches)
       if (bitcoinswitch.switches?.length > 0) {
-        const firstSwitchWithAssets = bitcoinswitch.switches.find(sw => sw.accepts_assets)
-        if (firstSwitchWithAssets) {
-          this.formDialog.data.accepts_assets = true
-          this.formDialog.data.accepted_asset_ids = firstSwitchWithAssets.accepted_asset_ids || []
-        } else {
-          this.formDialog.data.accepts_assets = false
-          this.formDialog.data.accepted_asset_ids = []
-        }
+        const firstSwitch = bitcoinswitch.switches[0]
+        this.formDialog.data.accepts_assets = firstSwitch.accepts_assets || false
+        this.formDialog.data.accepted_asset_ids = firstSwitch.accepted_asset_ids || []
       }
 
       this.formDialog.show = true

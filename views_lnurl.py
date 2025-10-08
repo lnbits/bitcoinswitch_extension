@@ -228,10 +228,6 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
 
     # For direct asset payments, use switch config amount directly
     # For Lightning payments, convert sats to asset amount using RFQ
-    logger.info(f"TAPROOT PAYMENT DEBUG: Starting calculation")
-    logger.info(f"  - Input amount: {amount} msat")
-    logger.info(f"  - Switch config amount: {_switch.amount}")
-    logger.info(f"  - Asset ID: {asset_id}")
 
     # Check if this is a direct asset payment or Lightning payment needing conversion
     # Direct asset payments should use the switch's configured asset amount
@@ -240,7 +236,6 @@ async def handle_taproot_payment(switch, _switch, switch_id, pin, amount, commen
     # For now, use switch config directly for direct asset payments
     # The switch is configured for the correct asset amount
     asset_amount = int(_switch.amount)
-    logger.info(f"TAPROOT PAYMENT DEBUG: Using switch config asset amount directly: {asset_amount}")
 
     # TODO: Add logic to detect Lightning vs direct asset payments and use RFQ only for Lightning
 
@@ -334,15 +329,7 @@ async def calculate_asset_amount_with_rfq(
     user_id: str
 ) -> int:
     """Calculate asset amount using RFQ rate or fallback to switch configuration."""
-    logger.info(f"RFQ CALC DEBUG: Function called with:")
-    logger.info(f"  - asset_id: {asset_id}")
-    logger.info(f"  - requested_sats: {requested_sats}")
-    logger.info(f"  - switch_amount: {switch_amount}")
-    logger.info(f"  - wallet_id: {wallet_id}")
-    logger.info(f"  - user_id: {user_id}")
-
     try:
-        logger.info(f"RFQ CALC DEBUG: About to call RateService.get_current_rate")
         # Try to get current rate via RFQ
         current_rate = await RateService.get_current_rate(
             asset_id=asset_id,
@@ -350,10 +337,8 @@ async def calculate_asset_amount_with_rfq(
             user_id=user_id,
             asset_amount=switch_amount
         )
-        logger.info(f"RFQ CALC DEBUG: RateService.get_current_rate returned: {current_rate}")
 
         if current_rate and current_rate > 0:
-            logger.info(f"RFQ CALC DEBUG: Using RFQ rate calculation")
             # Calculate asset amount based on real market rate
             # current_rate is sats per display unit, we need to convert to base units
             display_units = int(requested_sats / current_rate)
@@ -391,11 +376,11 @@ async def calculate_asset_amount_with_rfq(
                 logger.info(f"Using {display_units} display_units for invoice (fallback)")
                 return max(1, display_units)
         else:
-            logger.warning(f"RFQ CALC DEBUG: No valid RFQ rate available, using switch config: {switch_amount} assets")
+            logger.warning(f"No valid RFQ rate available for asset {asset_id[:8]}..., using switch config: {switch_amount} assets")
             return switch_amount
 
     except Exception as e:
-        logger.error(f"RFQ CALC DEBUG: RFQ rate lookup failed: {e}, using switch config: {switch_amount} assets")
+        logger.error(f"RFQ rate lookup failed for asset {asset_id[:8]}...: {e}, using switch config: {switch_amount} assets")
         return switch_amount
 
 
