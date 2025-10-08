@@ -311,6 +311,10 @@ window.app = Vue.createApp({
       this.formDialog.data.switches.forEach(sw => {
         sw.accepts_assets = val
         sw.accepted_asset_ids = val ? this.formDialog.data.accepted_asset_ids : []
+        // Variable amounts not supported for taproot assets
+        if (val) {
+          sw.variable = false
+        }
       })
     },
 

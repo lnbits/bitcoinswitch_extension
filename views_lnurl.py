@@ -99,7 +99,9 @@ async def lnurl_params(
 
     price_msat = int(base_amount_sats * 1000)
     # let the max be 100x the min if variable pricing is enabled
-    max_sendable = price_msat * 100 if _switch.variable else price_msat
+    # Variable amounts not supported for taproot assets
+    variable_enabled = _switch.variable and not (hasattr(_switch, 'accepts_assets') and _switch.accepts_assets)
+    max_sendable = price_msat * 100 if variable_enabled else price_msat
 
     # Build callback URL with asset support information if applicable
     base_url = request.url_for("bitcoinswitch.lnurl_cb", switch_id=bitcoinswitch_id, pin=pin)

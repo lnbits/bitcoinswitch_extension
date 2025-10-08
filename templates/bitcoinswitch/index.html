@@ -293,13 +293,14 @@
             <div class="col q-ml-md">
               <q-checkbox
                 v-model="_switch.variable"
+                :disable="formDialog.data.accepts_assets"
                 color="primary"
                 label="Variable"
                 size="xs"
                 dense
-                ><q-tooltip
-                  >Variable time (Amount * Duration)</q-tooltip
-                ></q-checkbox
+                >
+                <q-tooltip v-if="formDialog.data.accepts_assets">Not supported with Taproot assets</q-tooltip>
+              </q-checkbox
               >
               <q-checkbox
                 v-model="_switch.comment"
