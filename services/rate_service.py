@@ -6,10 +6,17 @@ including rate discovery, validation, and expiration checks. It interacts with t
 Taproot Assets API to get current market rates and validates them against configured
 tolerances.
 
+Implementation notes:
+- Uses HTTP API calls to taproot_assets /rate endpoint (not direct imports)
+- Wraps the RFQ rate API with BitcoinSwitch-specific validation logic
+- Provides tolerance checking to prevent excessive price slippage during payment flow
+- Tracks rate expiration to ensure quotes are fresh when creating invoices
+
 Key features:
 - Real-time rate discovery through RFQ (Request for Quote)
-- Rate validation with configurable tolerance
-- Rate expiration management
+- Rate validation with configurable tolerance (default: 5%)
+- Rate expiration management (default: 5 minutes)
+- Graceful fallback when taproot_assets unavailable
 """
 # Standard library imports
 from datetime import datetime, timedelta, timezone
