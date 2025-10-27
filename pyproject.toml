@@ -15,7 +15,7 @@ dev-dependencies = [
     "black",
     "pytest-asyncio",
     "pytest",
-    "mypy",
+    "mypy==1.17.1",
     "pre-commit",
     "ruff",
     "pytest-md",
