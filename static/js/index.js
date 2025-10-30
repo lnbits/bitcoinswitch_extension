@@ -149,7 +149,7 @@ window.app = Vue.createApp({
         .request(
           'POST',
           this.apiUrl,
-          this.g.user.wallets[0].adminkey,
+          null,
           this.formDialog.data
         )
         .then(response => {
@@ -165,7 +165,7 @@ window.app = Vue.createApp({
         .request(
           'PUT',
           this.apiUrl + '/' + this.formDialog.data.id,
-          this.g.user.wallets[0].adminkey,
+          null,
           this.formDialog.data
         )
         .then(response => {
@@ -183,7 +183,7 @@ window.app = Vue.createApp({
     },
     getBitcoinswitches() {
       LNbits.api
-        .request('GET', this.apiUrl, this.g.user.wallets[0].adminkey)
+        .request('GET', this.apiUrl)
         .then(response => {
           if (response.data.length > 0) {
             this.bitcoinswitches = response.data
@@ -199,7 +199,6 @@ window.app = Vue.createApp({
             .request(
               'DELETE',
               this.apiUrl + '/' + bitcoinswitchId,
-              this.g.user.wallets[0].adminkey
             )
             .then(() => {
               this.bitcoinswitches = _.reject(
@@ -216,7 +215,6 @@ window.app = Vue.createApp({
         .request(
           'PUT',
           `${this.apiUrl}/trigger/${_id}/${this.activePin}`,
-          this.g.user.wallets[0].adminkey
         )
         .then(() => {
           this.$q.notify({
