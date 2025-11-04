@@ -146,12 +146,7 @@ window.app = Vue.createApp({
 
     createBitcoinswitch() {
       LNbits.api
-        .request(
-          'POST',
-          this.apiUrl,
-          this.g.user.wallets[0].adminkey,
-          this.formDialog.data
-        )
+        .request('POST', this.apiUrl, null, this.formDialog.data)
         .then(response => {
           this.bitcoinswitches.push(response.data)
           this.closeFormDialog()
@@ -165,7 +160,7 @@ window.app = Vue.createApp({
         .request(
           'PUT',
           this.apiUrl + '/' + this.formDialog.data.id,
-          this.g.user.wallets[0].adminkey,
+          null,
           this.formDialog.data
         )
         .then(response => {
@@ -183,7 +178,7 @@ window.app = Vue.createApp({
     },
     getBitcoinswitches() {
       LNbits.api
-        .request('GET', this.apiUrl, this.g.user.wallets[0].adminkey)
+        .request('GET', this.apiUrl)
         .then(response => {
           if (response.data.length > 0) {
             this.bitcoinswitches = response.data
@@ -196,11 +191,7 @@ window.app = Vue.createApp({
         .confirmDialog('Are you sure you want to delete this pay link?')
         .onOk(() => {
           LNbits.api
-            .request(
-              'DELETE',
-              this.apiUrl + '/' + bitcoinswitchId,
-              this.g.user.wallets[0].adminkey
-            )
+            .request('DELETE', this.apiUrl + '/' + bitcoinswitchId)
             .then(() => {
               this.bitcoinswitches = _.reject(
                 this.bitcoinswitches,
@@ -213,11 +204,7 @@ window.app = Vue.createApp({
     triggerPin() {
       const _id = this.qrCodeDialog.data.id
       LNbits.api
-        .request(
-          'PUT',
-          `${this.apiUrl}/trigger/${_id}/${this.activePin}`,
-          this.g.user.wallets[0].adminkey
-        )
+        .request('PUT', `${this.apiUrl}/trigger/${_id}/${this.activePin}`)
         .then(() => {
           this.$q.notify({
             type: 'positive',

@@ -1,13 +1,9 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from lnbits.core.crud import get_user
-from lnbits.core.models import WalletTypeInfo
+from lnbits.core.models import User
 from lnbits.core.services import websocket_updater
-from lnbits.decorators import (
-    require_admin_key,
-    require_invoice_key,
-)
+from lnbits.decorators import check_user_exists
 
 from .crud import (
     create_bitcoinswitch,
@@ -21,14 +17,25 @@ from .models import Bitcoinswitch, CreateBitcoinswitch
 bitcoinswitch_api_router = APIRouter(prefix="/api/v1")
 
 
-@bitcoinswitch_api_router.post("", dependencies=[Depends(require_admin_key)])
-async def api_bitcoinswitch_create(data: CreateBitcoinswitch) -> Bitcoinswitch:
+@bitcoinswitch_api_router.post("")
+async def api_bitcoinswitch_create(
+    data: CreateBitcoinswitch, user: User = Depends(check_user_exists)
+) -> Bitcoinswitch:
+    if data.wallet not in user.wallet_ids:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail=(
+                "You do not have permission to create a bitcoinswitch for this wallet."
+            ),
+        )
     return await create_bitcoinswitch(data)
 
 
 @bitcoinswitch_api_router.put("/trigger/{switch_id}/{pin}")
 async def api_bitcoinswitch_trigger(
-    switch_id: str, pin: int, key_info: WalletTypeInfo = Depends(require_admin_key)
+    switch_id: str,
+    pin: int,
+    user: User = Depends(check_user_exists),
 ) -> None:
     switch = await get_bitcoinswitch(switch_id)
     if not switch:
@@ -41,7 +48,7 @@ async def api_bitcoinswitch_trigger(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Switch with this pin does not exist.",
         )
-    if switch.wallet != key_info.wallet.id:
+    if switch.wallet not in user.wallet_ids:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You do not have permission to trigger this switch.",
@@ -53,14 +60,14 @@ async def api_bitcoinswitch_trigger(
 async def api_bitcoinswitch_update(
     data: CreateBitcoinswitch,
     bitcoinswitch_id: str,
-    key_info: WalletTypeInfo = Depends(require_admin_key),
+    user: User = Depends(check_user_exists),
 ) -> Bitcoinswitch:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
         )
-    if bitcoinswitch.wallet != key_info.wallet.id:
+    if data.wallet not in user.wallet_ids:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You do not have permission to update this bitcoinswitch.",
@@ -76,26 +83,21 @@ async def api_bitcoinswitch_update(
 
 @bitcoinswitch_api_router.get("")
 async def api_bitcoinswitchs_retrieve(
-    key_info: WalletTypeInfo = Depends(require_invoice_key),
+    user: User = Depends(check_user_exists),
 ) -> list[Bitcoinswitch]:
-    user = await get_user(key_info.wallet.user)
-    if not user:
-        raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail="User does not exist"
-        )
     return await get_bitcoinswitches(user.wallet_ids)
 
 
 @bitcoinswitch_api_router.get("/{bitcoinswitch_id}")
 async def api_bitcoinswitch_retrieve(
-    bitcoinswitch_id: str, key_info: WalletTypeInfo = Depends(require_admin_key)
+    bitcoinswitch_id: str, user: User = Depends(check_user_exists)
 ) -> Bitcoinswitch:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Bitcoinswitch does not exist"
         )
-    if bitcoinswitch.wallet != key_info.wallet.id:
+    if bitcoinswitch.wallet not in user.wallet_ids:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You do not have permission to access this bitcoinswitch.",
@@ -105,14 +107,15 @@ async def api_bitcoinswitch_retrieve(
 
 @bitcoinswitch_api_router.delete("/{bitcoinswitch_id}")
 async def api_bitcoinswitch_delete(
-    bitcoinswitch_id: str, key_info: WalletTypeInfo = Depends(require_admin_key)
+    bitcoinswitch_id: str,
+    user: User = Depends(check_user_exists),
 ) -> None:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Bitcoinswitch does not exist."
         )
-    if bitcoinswitch.wallet != key_info.wallet.id:
+    if bitcoinswitch.wallet not in user.wallet_ids:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You do not have permission to delete this bitcoinswitch.",
