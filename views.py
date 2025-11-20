@@ -24,9 +24,7 @@ async def index(request: Request, user: User = Depends(check_user_exists)):
 
 
 @bitcoinswitch_generic_router.get("/public/{switch_id}", response_class=HTMLResponse)
-async def public(
-    switch_id: str, request: Request, user: User = Depends(check_user_exists)
-):
+async def public(switch_id: str, request: Request):
     switch = await get_bitcoinswitch(switch_id)
     if not switch:
         raise HTTPException(
@@ -37,5 +35,5 @@ async def public(
 
     return bitcoinswitch_renderer().TemplateResponse(
         "bitcoinswitch/public.html",
-        {"request": request, "user": user.json(), "switch": switch.json()},
+        {"request": request, "switch": switch.json()},
     )
