@@ -195,7 +195,7 @@
           dense
           v-model.trim="formDialog.data.currency"
           type="text"
-          label="Fiat currency for device"
+          :label="$t('currency')"
           :options="currencies"
         ></q-select>
         <q-input
