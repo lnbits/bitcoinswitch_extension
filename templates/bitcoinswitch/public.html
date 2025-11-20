@@ -49,7 +49,6 @@
 {% endblock %} {% block scripts %}
 <script>
   const bitcoinSwitch = JSON.parse({{ switch | tojson }})
-  console.log(bitcoinSwitch)
   window.app = Vue.createApp({
     el: '#vue',
     mixins: [windowMixin],
