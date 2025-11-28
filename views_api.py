@@ -81,6 +81,15 @@ async def api_bitcoinswitch_update(
     return await update_bitcoinswitch(bitcoinswitch)
 
 
+@bitcoinswitch_api_router.get("/{bitcoinswitch_id}")
+async def api_bitcoinswitch_get(bitcoinswitch_id: str) -> Bitcoinswitch:
+    bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
+    if not bitcoinswitch:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
+        )
+    return bitcoinswitch
+
 @bitcoinswitch_api_router.get("")
 async def api_bitcoinswitchs_retrieve(
     user: User = Depends(check_user_exists),
