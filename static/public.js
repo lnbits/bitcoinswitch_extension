@@ -1,9 +1,9 @@
 window.PageBitcoinswitchPublic = {
-  template: "#page-bitcoinswitch-public",
+  template: '#page-bitcoinswitch-public',
   mixins: [window.windowMixin],
   data() {
     return {
-      bs: null,
+      bitcoinswitch: null,
       url: '',
       lnurl: '',
       activeUrl: '',
@@ -16,17 +16,19 @@ window.PageBitcoinswitchPublic = {
     }
   },
   async created() {
-    this.g.public = true
     const bsId = this.$route.params.id
     this.url = `${window.location.origin}/bitcoinswitch/api/v1/lnurl/${bsId}`
     try {
-        const res = await LNbits.api.request("GET", `/bitcoinswitch/api/v1/${bsId}`)
-        this.bs = res.data
+      const res = await LNbits.api.request(
+        'GET',
+        `/bitcoinswitch/api/v1/${bsId}`
+      )
+      this.bitcoinswitch = res.data
     } catch (error) {
-        LNbits.utils.notifyApiError(error)
-        return
+      LNbits.utils.notifyApiError(error)
+      return
     }
-    this.activeSwitch = this.bs.switches[0]
+    this.activeSwitch = this.bitcoinswitch.switches[0]
     this.activeUrl = `${this.url}?pin=${this.activeSwitch.pin}`
   }
 }

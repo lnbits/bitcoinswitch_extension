@@ -90,6 +90,7 @@ async def api_bitcoinswitch_get(bitcoinswitch_id: str) -> Bitcoinswitch:
         )
     return bitcoinswitch
 
+
 @bitcoinswitch_api_router.get("")
 async def api_bitcoinswitchs_retrieve(
     user: User = Depends(check_user_exists),

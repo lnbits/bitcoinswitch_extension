@@ -25,12 +25,15 @@
           >
         </q-card-section>
       </q-card>
-      <q-card>
+      <q-card v-if="bitcoinswitch">
         <q-card-section>
-          <h6 class="text-subtitle1 q-mb-sm q-mt-none" v-text="bs.name"></h6>
+          <h6
+            class="text-subtitle1 q-mb-sm q-mt-none"
+            v-text="bitcoinswitch.title"
+          ></h6>
           <q-select
             v-model="activeSwitch"
-            :options="bs.switches"
+            :options="bitcoinswitch.switches"
             option-value="pin"
             :option-label="option => 'Pin ' + option.pin + ' - ' + option.label"
             label="Select a pin"
