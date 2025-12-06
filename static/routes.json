@@ -1,0 +1,14 @@
+[
+  {
+    "path": "/bitcoinswitch/",
+    "name": "PageBitcoinswitch",
+    "template": "/bitcoinswitch/static/index.vue",
+    "component": "/bitcoinswitch/static/index.js"
+  },
+  {
+    "path": "/bitcoinswitch/public/:id",
+    "name": "PageBitcoinswitchPublic",
+    "template": "/bitcoinswitch/static/public.vue",
+    "component": "/bitcoinswitch/static/public.js"
+  }
+]

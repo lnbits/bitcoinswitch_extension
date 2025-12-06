@@ -7,11 +7,8 @@ authors = [{ name = "Alan Bits", email = "alan@lnbits.com" }]
 urls = { Homepage = "https://lnbits.com", Repository = "https://github.com/lnbits/bitcoinswitch_extension" }
 dependencies = [ "lnbits>1" ]
 
-[tool.poetry]
-package-mode = false
-
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "black",
     "pytest-asyncio",
     "pytest",
@@ -20,6 +17,9 @@ dev-dependencies = [
     "ruff",
     "pytest-md",
 ]
+
+[tool.poetry]
+package-mode = false
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
