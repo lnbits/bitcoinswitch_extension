@@ -1,6 +1,6 @@
 [
   {
-    "path": "/bitcoinswitch",
+    "path": "/bitcoinswitch/",
     "name": "PageBitcoinswitch",
     "template": "/bitcoinswitch/static/index.vue",
     "component": "/bitcoinswitch/static/index.js"
