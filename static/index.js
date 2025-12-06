@@ -80,7 +80,7 @@ window.PageBitcoinswitch = {
   },
   methods: {
     openPublicLink(id) {
-      this.$router.push(`/bitcoinswitch/public/${id}`)
+      window.open(`/bitcoinswitch/public/${id}`, '_blank')
     },
     switchLabel(_switch) {
       const label = _switch.label !== null ? _switch.label : 'Switch '
