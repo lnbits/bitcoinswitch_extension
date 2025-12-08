@@ -1,6 +1,5 @@
 window.PageBitcoinswitch = {
   template: '#page-bitcoinswitch',
-  mixins: [windowMixin],
   data() {
     return {
       url: window.location.origin + '/bitcoinswitch/api/v1/lnurl',
@@ -230,7 +229,6 @@ window.PageBitcoinswitch = {
     }
   },
   created() {
-    this.g.public = false
     this.getBitcoinswitches()
   }
 }
