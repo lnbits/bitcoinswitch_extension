@@ -12,7 +12,7 @@ from .crud import (
     get_bitcoinswitches,
     update_bitcoinswitch,
 )
-from .models import Bitcoinswitch, CreateBitcoinswitch
+from .models import Bitcoinswitch, BitcoinswitchPublic, CreateBitcoinswitch
 
 bitcoinswitch_api_router = APIRouter(prefix="/api/v1")
 
@@ -81,12 +81,14 @@ async def api_bitcoinswitch_update(
     return await update_bitcoinswitch(bitcoinswitch)
 
 
-@bitcoinswitch_api_router.get("/{bitcoinswitch_id}")
-async def api_bitcoinswitch_get(bitcoinswitch_id: str) -> Bitcoinswitch:
+@bitcoinswitch_api_router.get(
+    "/public/{bitcoinswitch_id}", response_model=BitcoinswitchPublic
+)
+async def api_bitcoinswitch_get_public(bitcoinswitch_id: str) -> Bitcoinswitch:
     bitcoinswitch = await get_bitcoinswitch(bitcoinswitch_id)
     if not bitcoinswitch:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
+            status_code=HTTPStatus.NOT_FOUND, detail="Bitcoinswitch does not exist."
         )
     return bitcoinswitch
 

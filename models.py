@@ -39,6 +39,11 @@ class Bitcoinswitch(BaseModel):
     key: str = ""
 
 
+class BitcoinswitchPublic(BaseModel):
+    title: str
+    switches: list[Switch]
+
+
 class BitcoinswitchPayment(BaseModel):
     id: str
     bitcoinswitch_id: str
