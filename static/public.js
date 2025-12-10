@@ -1,6 +1,5 @@
 window.PageBitcoinswitchPublic = {
   template: '#page-bitcoinswitch-public',
-  mixins: [window.windowMixin],
   data() {
     return {
       bitcoinswitch: null,
