@@ -1,17 +1,14 @@
-window.app = Vue.createApp({
-  el: '#vue',
-  mixins: [windowMixin],
+window.PageBitcoinswitch = {
+  template: '#page-bitcoinswitch',
   data() {
     return {
       url: window.location.origin + '/bitcoinswitch/api/v1/lnurl',
       apiUrl: window.location.origin + '/bitcoinswitch/api/v1',
-      publicUrl: window.location.origin + '/bitcoinswitch/public',
       activeUrl: 0,
       activePin: 0,
       lnurl: '',
       filter: '',
       currency: 'sat',
-      currencies: [],
       bitcoinswitches: [],
       bitcoinswitchTable: {
         columns: [
@@ -81,8 +78,8 @@ window.app = Vue.createApp({
     }
   },
   methods: {
-    openLink(id) {
-      window.open(`${this.publicUrl}/${id}`, '_blank')
+    openPublicLink(id) {
+      window.open(`/bitcoinswitch/public/${id}`, '_blank')
     },
     switchLabel(_switch) {
       const label = _switch.label !== null ? _switch.label : 'Switch '
@@ -222,7 +219,7 @@ window.app = Vue.createApp({
     },
     copyDeviceString(bitcoinswitchId) {
       const loc = `wss://${window.location.host}/api/v1/ws/${bitcoinswitchId}`
-      this.copyText(loc, 'Device string copied to clipboard!')
+      this.utils.copyText(loc, 'Device string copied to clipboard!')
     },
     exportCSV() {
       LNbits.utils.exportCSV(
@@ -233,11 +230,5 @@ window.app = Vue.createApp({
   },
   created() {
     this.getBitcoinswitches()
-    LNbits.api
-      .request('GET', '/api/v1/currencies')
-      .then(response => {
-        this.currencies = ['sat', 'USD', ...response.data]
-      })
-      .catch(LNbits.utils.notifyApiError)
   }
-})
+}
