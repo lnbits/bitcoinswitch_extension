@@ -45,7 +45,7 @@
             color="primary"
             class="full-width"
             :label="$t('copy') + ' LNURL'"
-            @click="copyText(lnurl)"
+            @click="utils.copyText(lnurl)"
           ></q-btn>
         </q-card-section>
       </q-card>

@@ -219,7 +219,7 @@ window.PageBitcoinswitch = {
     },
     copyDeviceString(bitcoinswitchId) {
       const loc = `wss://${window.location.host}/api/v1/ws/${bitcoinswitchId}`
-      this.copyText(loc, 'Device string copied to clipboard!')
+      this.utils.copyText(loc, 'Device string copied to clipboard!')
     },
     exportCSV() {
       LNbits.utils.exportCSV(
