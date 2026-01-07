@@ -197,7 +197,7 @@
             v-model.trim="formDialog.data.currency"
             type="text"
             :label="$t('currency')"
-            :options="g.currencies"
+            :options="currencies"
           ></q-select>
           <q-input
             filled
