@@ -9,7 +9,6 @@ window.PageBitcoinswitch = {
       lnurl: '',
       filter: '',
       currency: 'sat',
-      currencies: [],
       bitcoinswitches: [],
       bitcoinswitchTable: {
         columns: [
@@ -67,6 +66,15 @@ window.PageBitcoinswitch = {
           disabled: false,
           disposable: true
         }
+      }
+    }
+  },
+  computed: {
+    currencies() {
+      if (this.g.allowedCurrencies.length > 0) {
+        return ['sat', ...this.g.allowedCurrencies]
+      } else {
+        return ['sat', ...this.g.currencies]
       }
     }
   },
@@ -232,10 +240,5 @@ window.PageBitcoinswitch = {
   },
   created() {
     this.getBitcoinswitches()
-    if (this.g.allowedCurrencies.length > 0) {
-        this.currencies = ['sat', ...this.g.allowedCurrencies]
-    } else {
-        this.currencies = ['sat', ...this.g.currencies]
-    }
   }
 }
