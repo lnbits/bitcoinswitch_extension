@@ -306,6 +306,14 @@
                     >Variable time (Amount * Duration)</q-tooltip
                   ></q-checkbox
                 >
+                <q-input
+                  v-if="_switch.variable"
+                  filled
+                  dense
+                  v-model.number="_switch.max_variable"
+                  type="number"
+                  label="Max multiplier"
+                ></q-input>
                 <q-checkbox
                   v-model="_switch.comment"
                   color="primary"
