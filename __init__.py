@@ -8,6 +8,7 @@ from .tasks import wait_for_paid_invoices
 from .views import bitcoinswitch_generic_router
 from .views_api import bitcoinswitch_api_router
 from .views_lnurl import bitcoinswitch_lnurl_router
+from .views_triggers import bitcoinswitch_triggers_router
 
 bitcoinswitch_ext: APIRouter = APIRouter(
     prefix="/bitcoinswitch", tags=["bitcoinswitch"]
@@ -15,6 +16,7 @@ bitcoinswitch_ext: APIRouter = APIRouter(
 bitcoinswitch_ext.include_router(bitcoinswitch_generic_router)
 bitcoinswitch_ext.include_router(bitcoinswitch_api_router)
 bitcoinswitch_ext.include_router(bitcoinswitch_lnurl_router)
+bitcoinswitch_ext.include_router(bitcoinswitch_triggers_router)
 
 bitcoinswitch_static_files = [
     {
