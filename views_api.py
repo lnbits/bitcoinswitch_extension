@@ -73,7 +73,7 @@ async def api_bitcoinswitch_update(
             detail="You do not have permission to update this bitcoinswitch.",
         )
 
-    for k, v in data.dict().items():
+    for k, v in data.model_dump().items():
         if v is not None:
             setattr(bitcoinswitch, k, v)
 

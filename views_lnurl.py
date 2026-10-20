@@ -15,7 +15,7 @@ from lnurl import (
     MessageAction,
     MilliSatoshi,
 )
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 from .crud import create_switch_payment, get_bitcoinswitch
 
@@ -52,7 +52,7 @@ async def lnurl_params(
     max_sendable = price_msat * 100 if _switch.variable else price_msat
     url = request.url_for("bitcoinswitch.lnurl_cb", switch_id=bitcoinswitch_id, pin=pin)
     try:
-        callback_url = parse_obj_as(CallbackUrl, str(url))
+        callback_url = TypeAdapter(CallbackUrl).validate_python(str(url))
     except InvalidLnurl:
         return LnurlErrorResponse(reason=f"Invalid LNURL callback URL: {url!s}")
     res = LnurlPayResponse(
@@ -120,7 +120,9 @@ async def lnurl_callback(
         message = f"{message}, but password was incorrect! :("
 
     return LnurlPayActionResponse(
-        pr=parse_obj_as(LightningInvoice, payment.bolt11),
-        successAction=MessageAction(message=parse_obj_as(Max144Str, message)),
+        pr=TypeAdapter(LightningInvoice).validate_python(payment.bolt11),
+        successAction=MessageAction(
+            message=TypeAdapter(Max144Str).validate_python(message)
+        ),
         disposable=switch.disposable,
     )
