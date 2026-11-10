@@ -22,7 +22,9 @@ from .crud import create_switch_payment, get_bitcoinswitch
 bitcoinswitch_lnurl_router = APIRouter(prefix="/api/v1/lnurl")
 
 
-@bitcoinswitch_lnurl_router.get("/{bitcoinswitch_id}")
+@bitcoinswitch_lnurl_router.get(
+    "/{bitcoinswitch_id}", openapi_extra={"x-lnbits-local-lnurl": True}
+)
 async def lnurl_params(
     request: Request, bitcoinswitch_id: str, pin: str
 ) -> LnurlPayResponse | LnurlErrorResponse:
@@ -66,7 +68,11 @@ async def lnurl_params(
     return res
 
 
-@bitcoinswitch_lnurl_router.get("/cb/{switch_id}/{pin}", name="bitcoinswitch.lnurl_cb")
+@bitcoinswitch_lnurl_router.get(
+    "/cb/{switch_id}/{pin}",
+    name="bitcoinswitch.lnurl_cb",
+    openapi_extra={"x-lnbits-local-lnurl": True},
+)
 async def lnurl_callback(
     switch_id: str,
     pin: int,
