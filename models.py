@@ -9,6 +9,7 @@ class Switch(BaseModel):
     pin: int = 0
     comment: bool = False
     variable: bool = False
+    max_variable: int = 100
     label: str | None = None
 
 
