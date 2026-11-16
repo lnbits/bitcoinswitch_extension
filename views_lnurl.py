@@ -50,8 +50,8 @@ async def lnurl_params(
         )
         * 1000
     )
-    # let the max be 100x the min if variable pricing is enabled
-    max_sendable = price_msat * 100 if _switch.variable else price_msat
+    # let the max be max_variable times the min if variable pricing is enabled
+    max_sendable = price_msat * _switch.max_variable if _switch.variable else price_msat
     url = request.url_for("bitcoinswitch.lnurl_cb", switch_id=bitcoinswitch_id, pin=pin)
     try:
         callback_url = TypeAdapter(CallbackUrl).validate_python(str(url))
