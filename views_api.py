@@ -67,7 +67,10 @@ async def api_bitcoinswitch_update(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="bitcoinswitch does not exist"
         )
-    if data.wallet not in user.wallet_ids:
+    if (
+        bitcoinswitch.wallet not in user.wallet_ids
+        or data.wallet not in user.wallet_ids
+    ):
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You do not have permission to update this bitcoinswitch.",
