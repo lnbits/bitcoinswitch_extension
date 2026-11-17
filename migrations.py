@@ -1,3 +1,5 @@
+from secrets import token_urlsafe
+
 from lnbits.db import Database
 
 db = Database("ext_bitcoinswitch")
@@ -52,3 +54,11 @@ async def m004_disposable(db):
         ALTER TABLE bitcoinswitch.switch
         ADD COLUMN disposable BOOLEAN NOT NULL DEFAULT TRUE;
         """)
+
+
+async def m005_device_channel_keys(db):
+    for switch in await db.fetchall("SELECT id FROM bitcoinswitch.switch"):
+        await db.execute(
+            "UPDATE bitcoinswitch.switch SET key = :key WHERE id = :id",
+            {"id": switch["id"], "key": token_urlsafe(32)},
+        )

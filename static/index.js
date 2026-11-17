@@ -228,7 +228,10 @@ window.PageBitcoinswitch = {
       this.formDialog.show = true
     },
     copyDeviceString(bitcoinswitchId) {
-      const loc = `wss://${window.location.host}/api/v1/ws/${bitcoinswitchId}`
+      const bitcoinswitch = _.findWhere(this.bitcoinswitches, {
+        id: bitcoinswitchId
+      })
+      const loc = `wss://${window.location.host}/api/v1/ws/${bitcoinswitch.key}`
       this.utils.copyText(loc, 'Device string copied to clipboard!')
     },
     exportCSV() {

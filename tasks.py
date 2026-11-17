@@ -63,4 +63,4 @@ async def on_invoice_paid(payment: Payment) -> None:
         logger.info(f"Wrong password entered for bitcoin switch: {bitcoinswitch.id}")
         return
 
-    return await websocket_manager.send(bitcoinswitch.id, payload)
+    return await websocket_manager.send(bitcoinswitch.key, payload)
