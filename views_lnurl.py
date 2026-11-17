@@ -96,6 +96,20 @@ async def lnurl_callback(
     if not websocket_manager.has_connection(switch_id):
         return LnurlErrorResponse(reason="No active bitcoinswitch connections.")
 
+    price_msat = int(
+        (
+            await fiat_amount_as_satoshis(float(_switch.amount), switch.currency)
+            if switch.currency != "sat"
+            else float(_switch.amount)
+        )
+        * 1000
+    )
+    max_sendable = price_msat * 100 if _switch.variable else price_msat
+    if amount < price_msat or amount > max_sendable:
+        return LnurlErrorResponse(
+            reason=f"Amount must be between {price_msat} and {max_sendable} msat."
+        )
+
     memo = f"{switch.title} (pin: {pin})"
     if comment:
         memo += f" - {comment}"
