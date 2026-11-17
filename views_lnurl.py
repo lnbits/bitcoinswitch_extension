@@ -81,8 +81,8 @@ async def lnurl_callback(
 ) -> LnurlPayActionResponse | LnurlErrorResponse:
     if comment and len(comment) > 255:
         return LnurlErrorResponse(reason="Comment too long, max 255 characters.")
-    if not amount:
-        return LnurlErrorResponse(reason="No amount specified.")
+    if amount is None or amount <= 0:
+        return LnurlErrorResponse(reason="Amount must be greater than zero.")
 
     switch = await get_bitcoinswitch(switch_id)
     if not switch:
@@ -93,7 +93,19 @@ async def lnurl_callback(
     if not _switch:
         return LnurlErrorResponse(reason=f"Switch with pin {pin} not found.")
 
-    if not websocket_manager.has_connection(switch_id):
+    price_msat = int(
+        (
+            await fiat_amount_as_satoshis(float(_switch.amount), switch.currency)
+            if switch.currency != "sat"
+            else float(_switch.amount)
+        )
+        * 1000
+    )
+    max_sendable = price_msat * 100 if _switch.variable else price_msat
+    if not price_msat <= amount <= max_sendable:
+        return LnurlErrorResponse(reason="Amount is outside the allowed range.")
+
+    if not websocket_manager.has_connection(switch.key):
         return LnurlErrorResponse(reason="No active bitcoinswitch connections.")
 
     memo = f"{switch.title} (pin: {pin})"

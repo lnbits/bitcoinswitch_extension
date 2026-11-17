@@ -53,7 +53,7 @@ async def api_bitcoinswitch_trigger(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You do not have permission to trigger this switch.",
         )
-    await websocket_updater(switch.id, f"{pin}-{_switch.duration}")
+    await websocket_updater(switch.key, f"{pin}-{_switch.duration}")
 
 
 @bitcoinswitch_api_router.put("/{bitcoinswitch_id}")

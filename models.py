@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from secrets import token_urlsafe
 
 from pydantic import BaseModel, Field
 
@@ -34,9 +35,8 @@ class Bitcoinswitch(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    # obsolete field, do not use anymore
-    # should be deleted from the database in the future
-    key: str = ""
+    # Device websocket channel, separate from the public switch id.
+    key: str = Field(default_factory=lambda: token_urlsafe(32))
 
 
 class BitcoinswitchPublic(BaseModel):
